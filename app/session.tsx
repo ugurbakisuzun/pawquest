@@ -1,0 +1,829 @@
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Animated,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Colors, Palette, Radius, Spacing } from "../constants/theme";
+import { sendSessionCompleteNotification } from "../lib/notifications";
+import { useStore } from "../lib/store";
+import { supabase } from "../lib/supabase";
+
+const C = Colors.dark;
+
+let ExpoSpeechRecognitionModule: any = null;
+let useSpeechRecognitionEvent: any = () => {};
+try {
+  const mod = require("expo-speech-recognition");
+  ExpoSpeechRecognitionModule = mod.ExpoSpeechRecognitionModule;
+  useSpeechRecognitionEvent = mod.useSpeechRecognitionEvent;
+} catch {}
+
+interface ProgramStep {
+  number: number;
+  instruction: string;
+  duration_seconds: number;
+  break_seconds: number;
+  voice_prompt: string | null;
+}
+
+interface ProgramDay {
+  day: number;
+  title: string;
+  goal: string;
+  steps: ProgramStep[];
+}
+
+interface StepAnalysis {
+  stepIndex: number;
+  transcript: string;
+  feedback: string;
+}
+
+function getNewLevel(xp: number): number {
+  if (xp >= 9000) return 10;
+  if (xp >= 6500) return 9;
+  if (xp >= 4500) return 8;
+  if (xp >= 3000) return 7;
+  if (xp >= 1800) return 6;
+  if (xp >= 1000) return 5;
+  if (xp >= 500) return 4;
+  if (xp >= 200) return 3;
+  if (xp >= 50) return 2;
+  return 1;
+}
+
+export default function SessionScreen() {
+  const params = useLocalSearchParams();
+  const dayNumber = Number(params.day) || 1;
+  const programSlug = (params.slug as string) || "separation-anxiety";
+  const trickName = params.trickName as string | undefined;
+  const trickDesc = params.trickDesc as string | undefined;
+  const trickXp = Number(params.trickXp) || 80;
+  const trickSteps: string[] | undefined = params.trickSteps
+    ? JSON.parse(params.trickSteps as string)
+    : undefined;
+
+  const { dog, setDog, addCompletedMission } = useStore();
+  const [dayData, setDayData] = useState<ProgramDay | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [activePromptIndex, setActivePromptIndex] = useState<number | null>(
+    null,
+  );
+  const [isListening, setIsListening] = useState(false);
+  const [isAnalysing, setIsAnalysing] = useState(false);
+  const [analyses, setAnalyses] = useState<StepAnalysis[]>([]);
+  const [textInput, setTextInput] = useState("");
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const scrollRef = useRef<ScrollView>(null);
+
+  const isTrickMode = !!trickName;
+  const hasNativeSpeech = !!ExpoSpeechRecognitionModule;
+
+  useSpeechRecognitionEvent("result", (event: any) => {
+    const text = event.results[0]?.transcript ?? "";
+    if (text && activePromptIndex !== null) {
+      setIsListening(false);
+      analyseWithAI(text, activePromptIndex);
+    }
+  });
+  useSpeechRecognitionEvent("error", () => setIsListening(false));
+  useSpeechRecognitionEvent("end", () => setIsListening(false));
+
+  useEffect(() => {
+    if (isListening) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.25,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ]),
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isListening]);
+
+  useEffect(() => {
+    if (isTrickMode) {
+      setDayData({
+        day: 0,
+        title: trickName!,
+        goal: trickDesc || "",
+        steps: (trickSteps || []).map((instruction, i) => ({
+          number: i + 1,
+          instruction,
+          duration_seconds: 0,
+          break_seconds: 60,
+          voice_prompt:
+            i === (trickSteps?.length ?? 1) - 1
+              ? "How did the session go? What did your dog do best?"
+              : null,
+        })),
+      });
+      setLoading(false);
+      return;
+    }
+    loadDay();
+  }, []);
+
+  const loadDay = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("training_programs")
+        .select("content")
+        .eq("slug", programSlug)
+        .single();
+      if (error) throw error;
+      const days: ProgramDay[] = data.content;
+      const found = days.find((d) => d.day === dayNumber);
+      const sorted = [...days].sort(
+        (a, b) => Math.abs(a.day - dayNumber) - Math.abs(b.day - dayNumber),
+      );
+      setDayData(found ?? sorted[0] ?? null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startListening = async (stepIndex: number) => {
+    if (!hasNativeSpeech) return;
+    try {
+      const result =
+        await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!result.granted) {
+        alert("Microphone permission required.");
+        return;
+      }
+      setActivePromptIndex(stepIndex);
+      setIsListening(true);
+      setTextInput("");
+      ExpoSpeechRecognitionModule.start({
+        lang: "en-US",
+        continuous: false,
+        interimResults: false,
+      });
+    } catch {
+      setIsListening(false);
+    }
+  };
+
+  const stopListening = () => {
+    if (ExpoSpeechRecognitionModule) ExpoSpeechRecognitionModule.stop();
+    setIsListening(false);
+  };
+
+  const analyseWithAI = async (transcript: string, stepIndex: number) => {
+    if (!dayData || !transcript.trim()) return;
+    setIsAnalysing(true);
+    const step = dayData.steps[stepIndex];
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY!,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 150,
+          system: `You are PawAI, a dog behaviour coach inside PawQuest.
+Dog: ${dog?.name ?? "the dog"}, ${dog?.breed ?? "unknown breed"}, Level ${dog?.level ?? 1}.
+Program: Separation Anxiety · Day ${dayData.day} — ${dayData.title}.
+Step ${step.number}: ${step.instruction}
+Question: ${step.voice_prompt}
+Analyse in 2 short sentences: what the behaviour indicates, and one actionable tip. Be warm and jargon-free.`,
+          messages: [{ role: "user", content: transcript }],
+        }),
+      });
+      const data = await response.json();
+      const feedback =
+        data.content?.[0]?.text ?? "Great observation — keep going!";
+      setAnalyses((prev) => [
+        ...prev.filter((a) => a.stepIndex !== stepIndex),
+        { stepIndex, transcript, feedback },
+      ]);
+      setTextInput("");
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 200);
+    } catch {
+      setAnalyses((prev) => [
+        ...prev.filter((a) => a.stepIndex !== stepIndex),
+        {
+          stepIndex,
+          transcript,
+          feedback: "Couldn't analyse right now — great job observing!",
+        },
+      ]);
+    } finally {
+      setIsAnalysing(false);
+      setActivePromptIndex(null);
+    }
+  };
+
+  const toggleStep = (index: number) => {
+    const isCompleting = !completedSteps.includes(index);
+    setCompletedSteps((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+    );
+    if (isCompleting && dayData?.steps[index]?.voice_prompt) {
+      setTimeout(() => {
+        setActivePromptIndex(index);
+        setTextInput("");
+      }, 300);
+    } else {
+      setActivePromptIndex(null);
+    }
+  };
+
+  const handleDone = async () => {
+    if (!dog || saving) return;
+    setSaving(true);
+    try {
+      const xpEarned = isTrickMode
+        ? trickXp
+        : Math.round(50 + (dayData?.steps.length ?? 5) * 10);
+      const newXP = dog.total_xp + xpEarned;
+      const newLevel = getNewLevel(newXP);
+      const leveledUp = newLevel > dog.level;
+      const now = new Date();
+
+      // ── Streak hesapla ─────────────────────────────────────────────
+      const lastTrained = dog.last_trained_at
+        ? new Date(dog.last_trained_at)
+        : null;
+      const diffHours = lastTrained
+        ? (now.getTime() - lastTrained.getTime()) / (1000 * 60 * 60)
+        : 999;
+
+      let newStreak: number;
+      if (!lastTrained) {
+        // İlk seans
+        newStreak = 1;
+      } else if (diffHours < 24) {
+        // Aynı gün — streak en az 1 olmalı
+        newStreak = Math.max(dog.streak_days, 1);
+      } else if (diffHours < 48) {
+        // Ertesi gün — streak artıyor
+        newStreak = dog.streak_days + 1;
+      } else {
+        // 48 saatten fazla — sıfırla
+        newStreak = 1;
+      }
+      // ───────────────────────────────────────────────────────────────
+
+      const { data, error } = await supabase
+        .from("dogs")
+        .update({
+          total_xp: newXP,
+          level: newLevel,
+          streak_days: newStreak,
+          last_trained_at: now.toISOString(),
+        })
+        .eq("id", dog.id)
+        .select()
+        .single();
+      if (error) throw error;
+
+      await supabase.from("xp_events").insert({
+        dog_id: dog.id,
+        amount: xpEarned,
+        reason: isTrickMode ? `${trickName} trick` : `SA Day ${dayNumber}`,
+      });
+
+      if (!isTrickMode) {
+        await supabase.from("training_sessions").insert({
+          dog_id: dog.id,
+          day_number: dayNumber,
+        });
+      }
+
+      setDog(data);
+      addCompletedMission(
+        isTrickMode ? ((params.trickId as string) ?? "1") : "1",
+      );
+      await sendSessionCompleteNotification(dog.name, xpEarned, newStreak);
+      router.push(
+        leveledUp
+          ? `/levelup?level=${newLevel}&xp=${newXP}&name=${dog.name}`
+          : ("/dashboard" as any),
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading)
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Palette.pawGold} />
+      </View>
+    );
+
+  if (!dayData)
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{ color: C.text }}>Session not found.</Text>
+      </View>
+    );
+
+  const totalSteps = dayData.steps.length;
+  const progress = totalSteps > 0 ? completedSteps.length / totalSteps : 0;
+  const xpEarned = isTrickMode ? trickXp : Math.round(50 + totalSteps * 10);
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
+        {/* ── Top bar ── */}
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={styles.backText}>← Back</Text>
+          </TouchableOpacity>
+          <View style={styles.progressBarWrap}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${progress * 100}%` as any },
+              ]}
+            />
+          </View>
+          <Text style={styles.stepCount}>
+            {completedSteps.length}/{totalSteps}
+          </Text>
+        </View>
+
+        {/* ── Hero ── */}
+        <View style={styles.hero}>
+          <Text style={styles.heroEmoji}>{isTrickMode ? "🐕" : "🐾"}</Text>
+          <Text style={styles.heroTitle}>{dayData.title}</Text>
+          {!isTrickMode && (
+            <View style={styles.dayBadge}>
+              <Text style={styles.dayBadgeText}>Day {dayData.day}</Text>
+            </View>
+          )}
+          <Text style={styles.heroGoal}>{dayData.goal}</Text>
+        </View>
+
+        {/* ── XP badge ── */}
+        <View style={styles.xpBadge}>
+          <Text style={styles.xpBadgeText}>
+            ⭐ Complete to earn +{xpEarned} XP
+          </Text>
+        </View>
+
+        {/* ── Steps ── */}
+        <Text style={styles.stepsTitle}>Step by step</Text>
+        {dayData.steps.map((step, index) => {
+          const done = completedSteps.includes(index);
+          const analysis = analyses.find((a) => a.stepIndex === index);
+          const isActive = activePromptIndex === index;
+
+          return (
+            <View key={index}>
+              <TouchableOpacity
+                style={[styles.stepItem, done && styles.stepDone]}
+                onPress={() => toggleStep(index)}
+              >
+                <View style={[styles.stepNum, done && styles.stepNumDone]}>
+                  <Text
+                    style={[styles.stepNumText, done && styles.stepNumTextDone]}
+                  >
+                    {done ? "✓" : step.number}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.stepText, done && styles.stepTextDone]}>
+                    {step.instruction}
+                  </Text>
+                  {step.duration_seconds > 0 && (
+                    <Text style={styles.stepMeta}>
+                      ⏱ {step.duration_seconds}s
+                      {step.break_seconds > 0
+                        ? `  ·  🔄 ${step.break_seconds}s break`
+                        : ""}
+                    </Text>
+                  )}
+                  {step.voice_prompt && !done && (
+                    <Text style={styles.stepPromptHint}>
+                      🎙️ AI will ask after this step
+                    </Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              {/* ── Voice / text prompt card ── */}
+              {isActive && step.voice_prompt && (
+                <View style={styles.voiceCard}>
+                  <Text style={styles.voiceQuestion}>{step.voice_prompt}</Text>
+                  {hasNativeSpeech ? (
+                    <TouchableOpacity
+                      style={[
+                        styles.micBtn,
+                        isListening && styles.micBtnActive,
+                      ]}
+                      onPress={
+                        isListening
+                          ? stopListening
+                          : () => startListening(index)
+                      }
+                    >
+                      <Animated.View
+                        style={{ transform: [{ scale: pulseAnim }] }}
+                      >
+                        <Text style={styles.micIcon}>
+                          {isListening ? "⏹" : "🎤"}
+                        </Text>
+                      </Animated.View>
+                      <Text style={styles.micLabel}>
+                        {isListening ? "Tap to stop" : "Tap to record"}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={styles.textInputWrap}>
+                      <TextInput
+                        style={styles.observationInput}
+                        placeholder="Describe what your dog did…"
+                        placeholderTextColor={C.textMuted}
+                        value={textInput}
+                        onChangeText={setTextInput}
+                        multiline
+                        maxLength={300}
+                      />
+                      <TouchableOpacity
+                        style={[
+                          styles.sendObsBtn,
+                          (!textInput.trim() || isAnalysing) &&
+                            styles.sendObsBtnDisabled,
+                        ]}
+                        onPress={() => analyseWithAI(textInput, index)}
+                        disabled={!textInput.trim() || isAnalysing}
+                      >
+                        <Text
+                          style={[
+                            styles.sendObsText,
+                            (!textInput.trim() || isAnalysing) &&
+                              styles.sendObsTextDisabled,
+                          ]}
+                        >
+                          {isAnalysing ? "Analysing…" : "Get AI feedback →"}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  {isAnalysing && (
+                    <View style={styles.analysingRow}>
+                      <ActivityIndicator
+                        size="small"
+                        color={Palette.levelPurple}
+                      />
+                      <Text style={styles.analysingText}>
+                        PawAI is analysing…
+                      </Text>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    style={styles.skipPromptBtn}
+                    onPress={() => setActivePromptIndex(null)}
+                  >
+                    <Text style={styles.skipPromptText}>Skip for now</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* ── AI feedback ── */}
+              {analysis && (
+                <View style={styles.feedbackCard}>
+                  <View style={styles.feedbackHeader}>
+                    <Text style={styles.feedbackIcon}>🤖</Text>
+                    <Text style={styles.feedbackTitle}>PawAI Analysis</Text>
+                  </View>
+                  <Text style={styles.feedbackTranscript}>
+                    "{analysis.transcript}"
+                  </Text>
+                  <Text style={styles.feedbackText}>{analysis.feedback}</Text>
+                </View>
+              )}
+            </View>
+          );
+        })}
+
+        {/* ── Actions ── */}
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[
+              styles.btnSuccess,
+              (completedSteps.length < totalSteps || saving) &&
+                styles.btnDisabled,
+            ]}
+            onPress={handleDone}
+            disabled={completedSteps.length < totalSteps || saving}
+          >
+            {saving ? (
+              <ActivityIndicator color={Palette.questNight} />
+            ) : (
+              <Text style={styles.btnSuccessText}>
+                {completedSteps.length === totalSteps
+                  ? `🎉 Complete session! +${xpEarned} XP`
+                  : `Complete all ${totalSteps} steps to finish`}
+              </Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.btnSkip}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.btnSkipText}>Skip for now</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={styles.aiTip}
+          onPress={() => router.push("/advisor" as any)}
+        >
+          <Text style={styles.aiTipIcon}>🤖</Text>
+          <Text style={styles.aiTipText}>
+            More questions? Ask the AI Advisor →
+          </Text>
+        </TouchableOpacity>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: C.background,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  container: {
+    flex: 1,
+    backgroundColor: C.background,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: 60,
+  },
+
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 24,
+  },
+  backText: { color: C.textSecondary, fontSize: 14 },
+  progressBarWrap: {
+    flex: 1,
+    height: 6,
+    backgroundColor: C.border,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: Palette.pawGold,
+    borderRadius: 3,
+  },
+  stepCount: { color: C.textSecondary, fontSize: 12 },
+
+  hero: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: Radius.xl,
+    padding: 24,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  heroEmoji: { fontSize: 56, marginBottom: 12 },
+  heroTitle: {
+    color: C.text,
+    fontSize: 22,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  dayBadge: {
+    backgroundColor: "rgba(250,199,117,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(250,199,117,0.3)",
+    borderRadius: Radius.full,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    marginBottom: 8,
+  },
+  dayBadgeText: { color: C.xp, fontSize: 12, fontWeight: "600" },
+  heroGoal: {
+    color: C.textSecondary,
+    fontSize: 13,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+
+  xpBadge: {
+    backgroundColor: "rgba(250,199,117,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(250,199,117,0.2)",
+    borderRadius: Radius.md,
+    padding: 12,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  xpBadgeText: { color: C.xp, fontSize: 13, fontWeight: "600" },
+
+  stepsTitle: {
+    color: C.text,
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  stepItem: {
+    flexDirection: "row",
+    gap: 14,
+    alignItems: "flex-start",
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: Radius.lg,
+    padding: 14,
+    marginBottom: 8,
+  },
+  stepDone: {
+    backgroundColor: "rgba(29,158,117,0.06)",
+    borderColor: "rgba(29,158,117,0.2)",
+  },
+  stepNum: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(250,199,117,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(250,199,117,0.3)",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    marginTop: 1,
+  },
+  stepNumDone: {
+    backgroundColor: "rgba(29,158,117,0.15)",
+    borderColor: "rgba(29,158,117,0.3)",
+  },
+  stepNumText: { color: C.xp, fontSize: 12, fontWeight: "700" },
+  stepNumTextDone: { color: C.success },
+  stepText: { color: C.text, fontSize: 14, lineHeight: 22 },
+  stepTextDone: { color: C.textSecondary },
+  stepMeta: { color: C.textMuted, fontSize: 11, marginTop: 4 },
+  stepPromptHint: { color: Palette.levelPurple, fontSize: 11, marginTop: 4 },
+
+  voiceCard: {
+    backgroundColor: "rgba(127,119,221,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(127,119,221,0.25)",
+    borderRadius: Radius.lg,
+    padding: 16,
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  voiceQuestion: {
+    color: C.text,
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 16,
+    lineHeight: 22,
+  },
+  micBtn: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: Radius.full,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 10,
+  },
+  micBtnActive: {
+    backgroundColor: "rgba(250,199,117,0.15)",
+    borderColor: Palette.pawGold,
+  },
+  micIcon: { fontSize: 28 },
+  micLabel: { color: C.textSecondary, fontSize: 12 },
+
+  textInputWrap: { width: "100%", gap: 8, marginBottom: 8 },
+  observationInput: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: Radius.md,
+    padding: 12,
+    color: C.text,
+    fontSize: 14,
+    lineHeight: 20,
+    minHeight: 80,
+    textAlignVertical: "top",
+    width: "100%",
+  },
+  sendObsBtn: {
+    backgroundColor: Palette.pawGold,
+    borderRadius: Radius.md,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  sendObsBtnDisabled: {
+    backgroundColor: "rgba(250,199,117,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(250,199,117,0.3)",
+  },
+  sendObsText: { color: Palette.questNight, fontSize: 13, fontWeight: "600" },
+  sendObsTextDisabled: { color: "rgba(250,199,117,0.5)" },
+
+  analysingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  analysingText: { color: Palette.levelPurple, fontSize: 12 },
+  skipPromptBtn: { paddingVertical: 6 },
+  skipPromptText: { color: C.textMuted, fontSize: 12 },
+
+  feedbackCard: {
+    backgroundColor: "rgba(29,158,117,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(29,158,117,0.2)",
+    borderRadius: Radius.lg,
+    padding: 14,
+    marginBottom: 8,
+  },
+  feedbackHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  feedbackIcon: { fontSize: 16 },
+  feedbackTitle: { color: C.success, fontSize: 13, fontWeight: "600" },
+  feedbackTranscript: {
+    color: C.textSecondary,
+    fontSize: 12,
+    fontStyle: "italic",
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  feedbackText: { color: C.text, fontSize: 13, lineHeight: 20 },
+
+  actions: { gap: 10, marginTop: 8 },
+  btnSuccess: {
+    backgroundColor: Palette.streakGreen,
+    borderRadius: Radius.lg,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  btnDisabled: { backgroundColor: C.surface },
+  btnSuccessText: {
+    color: Palette.questNight,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  btnSkip: {
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: Radius.lg,
+    paddingVertical: 15,
+    alignItems: "center",
+  },
+  btnSkipText: { color: C.textSecondary, fontSize: 15 },
+  aiTip: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 16,
+    padding: 12,
+  },
+  aiTipIcon: { fontSize: 16 },
+  aiTipText: { color: C.accent, fontSize: 13 },
+});
