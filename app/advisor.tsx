@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { Colors, Palette, Radius } from "../constants/theme";
 import { useStore } from "../lib/store";
+import { supabase } from "../lib/supabase";
 
 const C = Colors.dark;
 
@@ -166,14 +167,11 @@ export default function AdvisorScreen() {
 Dog profile: Name: ${dog?.name}, Breed: ${dog?.breed}, Age: ${dog?.age}, Level: ${dog?.level}, XP: ${dog?.total_xp}
 Rules: Always call the dog by name. Max 3 short paragraphs. Give numbered actionable steps. Be warm and encouraging.`;
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY!,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not signed in");
+      const { data, error } = await supabase.functions.invoke("claude-chat", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: {
           model: "claude-haiku-4-5-20251001",
           max_tokens: 500,
           system: systemPrompt,
@@ -184,11 +182,13 @@ Rules: Always call the dog by name. Max 3 short paragraphs. Give numbered action
               .map((m) => ({ role: m.role, content: m.content })),
             { role: "user", content: text.trim() },
           ],
-        }),
+        },
       });
-
-      const data = await response.json();
-      const replyText = data.content[0].text;
+      if (error) {
+        console.error("[claude-chat] invoke error:", error);
+        throw error;
+      }
+      const replyText = data?.content?.[0]?.text ?? "Sorry, I couldn't respond. Try again!";
       const assistantId = (Date.now() + 1).toString();
       const assistantMsg: Message = {
         id: assistantId,

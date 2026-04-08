@@ -198,14 +198,11 @@ export default function SessionScreen() {
     setIsAnalysing(true);
     const step = dayData.steps[stepIndex];
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY!,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not signed in");
+      const { data, error } = await supabase.functions.invoke("claude-chat", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: {
           model: "claude-haiku-4-5-20251001",
           max_tokens: 150,
           system: `You are PawAI, a dog behaviour coach inside PawQuest.
@@ -215,11 +212,14 @@ Step ${step.number}: ${step.instruction}
 Question: ${step.voice_prompt}
 Analyse in 2 short sentences: what the behaviour indicates, and one actionable tip. Be warm and jargon-free.`,
           messages: [{ role: "user", content: transcript }],
-        }),
+        },
       });
-      const data = await response.json();
+      if (error) {
+        console.error("[claude-chat] invoke error:", error);
+        throw error;
+      }
       const feedback =
-        data.content?.[0]?.text ?? "Great observation — keep going!";
+        data?.content?.[0]?.text ?? "Great observation — keep going!";
       setAnalyses((prev) => [
         ...prev.filter((a) => a.stepIndex !== stepIndex),
         { stepIndex, transcript, feedback },

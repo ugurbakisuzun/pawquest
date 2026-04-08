@@ -12,9 +12,7 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://spnlnakubbdlssxliwfp.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_bvUjdgr4t6Lu95bGdQOZaw_dQZy2AcJ",
-        "ANTHROPIC_API_KEY": "REDACTED",
-        "EXPO_PUBLIC_ANTHROPIC_API_KEY": "REDACTED"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_bvUjdgr4t6Lu95bGdQOZaw_dQZy2AcJ"
       }
     },
     "production": {
