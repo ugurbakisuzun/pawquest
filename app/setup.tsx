@@ -23,7 +23,7 @@ const { width: SCREEN_W } = Dimensions.get("window");
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const POPULAR_BREEDS = [
+export const POPULAR_BREEDS = [
   "Mix / Mixed Breed",
   "Golden Retriever",
   "Labrador Retriever",
@@ -46,7 +46,7 @@ const POPULAR_BREEDS = [
   "Goldendoodle",
 ];
 
-const ALL_BREEDS = [
+export const ALL_BREEDS = [
   "Affenpinscher","Afghan Hound","Airedale Terrier","Akita","Alaskan Malamute",
   "American Bulldog","American Staffordshire","Australian Shepherd","Basenji",
   "Basset Hound","Bernese Mountain Dog","Bichon Frise","Bloodhound",
@@ -65,7 +65,7 @@ const ALL_BREEDS = [
   "Vizsla","Weimaraner","West Highland White Terrier","Whippet",
 ];
 
-const TRAINING_GOALS = [
+export const TRAINING_GOALS = [
   { id: "separation", label: "Leaving my dog alone", emoji: "🏠" },
   { id: "tricks", label: "Trick training", emoji: "🎯" },
   { id: "leash", label: "Leash walking", emoji: "🦮" },
@@ -78,7 +78,7 @@ const TRAINING_GOALS = [
   { id: "socialization", label: "Socialization", emoji: "🐾" },
 ];
 
-const KNOWN_SKILLS = [
+export const KNOWN_SKILLS = [
   { id: "new_to_training", label: "My dog is new to training", emoji: "🐣" },
   { id: "name", label: "Name recognition", emoji: "👂" },
   { id: "eye_contact", label: "Eye contact", emoji: "👀" },
@@ -93,7 +93,7 @@ const KNOWN_SKILLS = [
   { id: "shake", label: "Shake / Paw", emoji: "🤝" },
 ];
 
-const LIFESTYLE_OPTIONS = [
+export const LIFESTYLE_OPTIONS = [
   { id: "city", label: "I'm a city person", emoji: "🏙️" },
   { id: "hosting", label: "I like hosting people", emoji: "🏡" },
   { id: "couch", label: "Sometimes I'm a couch potato", emoji: "🛋️" },
@@ -104,7 +104,7 @@ const LIFESTYLE_OPTIONS = [
   { id: "other", label: "Other", emoji: "📝" },
 ];
 
-const TIME_OPTIONS = [
+export const TIME_OPTIONS = [
   { label: "5 min", value: 5 },
   { label: "15 min", value: 15 },
   { label: "30 min", value: 30 },
@@ -159,9 +159,9 @@ const TOTAL_QUIZ_STEPS = 11;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+export const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-function calcAge(month: number, year: number): string {
+export function calcAge(month: number, year: number): string {
   const now = new Date();
   let years = now.getFullYear() - year;
   let months = now.getMonth() - month;
@@ -174,11 +174,11 @@ function calcAge(month: number, year: number): string {
 
 // ─── Scroll Wheel Picker ─────────────────────────────────────────────────────
 
-const ITEM_HEIGHT = 48;
-const VISIBLE_ITEMS = 5;
-const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
+export const ITEM_HEIGHT = 48;
+export const VISIBLE_ITEMS = 5;
+export const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
-function WheelPicker({
+export function WheelPicker({
   data,
   selectedIndex,
   onSelect,

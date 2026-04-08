@@ -329,12 +329,6 @@ export default function DashboardScreen() {
     );
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setDog(null);
-    router.replace("/" as any);
-  };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -372,13 +366,7 @@ export default function DashboardScreen() {
           </View>
           <TouchableOpacity
             style={styles.avatarBtn}
-            onPress={() => router.push("/setup" as any)}
-            onLongPress={() => {
-              Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-                { text: "Cancel", style: "cancel" },
-                { text: "Sign Out", style: "destructive", onPress: handleSignOut },
-              ]);
-            }}
+            onPress={() => router.push("/profile" as any)}
           >
             <Text style={styles.avatarEmoji}>🐾</Text>
           </TouchableOpacity>
