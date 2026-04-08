@@ -16,6 +16,7 @@ import {
 import { Colors, Palette, Radius, Spacing } from "../constants/theme";
 import { useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
+import { isPurchasesConfigured, showManageSubscriptions } from "../lib/purchases";
 import {
   ALL_BREEDS,
   KNOWN_SKILLS,
@@ -61,7 +62,7 @@ function parseBirthday(bday: string | undefined, years: string[]): { mIdx: numbe
 }
 
 export default function ProfileScreen() {
-  const { dog, setDog } = useStore();
+  const { dog, setDog, isPro, setProForDev } = useStore();
   const [email, setEmail] = useState<string>("");
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -292,6 +293,23 @@ export default function ProfileScreen() {
     );
   };
 
+  // ── Manage subscription ──
+  const handleManageSubscription = async () => {
+    // In production with real RC keys: deep-link to native subscription mgmt
+    if (isPurchasesConfigured()) {
+      const result = await showManageSubscriptions();
+      if (!result.ok) {
+        Alert.alert(
+          "Couldn't open subscription settings",
+          result.error ?? "Try opening your App Store or Google Play account directly.",
+        );
+      }
+      return;
+    }
+    // Dev mode: route to paywall (which has the dev toggle)
+    router.push("/paywall" as any);
+  };
+
   const doDeleteAccount = async () => {
     setDeleting(true);
     try {
@@ -376,6 +394,11 @@ export default function ProfileScreen() {
           <Text style={styles.heroSub}>
             Level {dog.level} · {dog.total_xp} XP · 🔥 {dog.streak_days}-day streak
           </Text>
+          {isPro && (
+            <View style={styles.proBadge}>
+              <Text style={styles.proBadgeText}>👑 PAWLO PRO</Text>
+            </View>
+          )}
         </View>
 
         {/* ── Basics ── */}
@@ -691,6 +714,60 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* ── Pawlo Pro section ── */}
+        {!editing && (
+          <>
+            <Text style={styles.sectionTitle}>Pawlo Pro</Text>
+            {isPro ? (
+              <View style={styles.proActiveCard}>
+                <View style={styles.proActiveHeader}>
+                  <Text style={styles.proActiveEmoji}>👑</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.proActiveTitle}>You're a Pawlo Pro</Text>
+                    <Text style={styles.proActiveSub}>
+                      All programs unlocked · 12 tricks · unlimited Pawlo
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.manageBtn}
+                  onPress={handleManageSubscription}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.manageBtnText}>Manage Subscription →</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.proUpsellCard}
+                onPress={() => router.push("/paywall" as any)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.proUpsellEmoji}>👑</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.proUpsellTitle}>Unlock everything</Text>
+                  <Text style={styles.proUpsellSub}>
+                    All 4 programs · 12 tricks · unlimited Pawlo
+                  </Text>
+                </View>
+                <Text style={styles.proUpsellArrow}>→</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Dev-only quick toggle so we can test gating without leaving profile */}
+            {__DEV__ && (
+              <TouchableOpacity
+                style={styles.devProToggle}
+                onPress={() => setProForDev(!isPro)}
+              >
+                <Text style={styles.devProToggleText}>
+                  DEV: Toggle Pro {isPro ? "OFF" : "ON"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+
         {/* ── Account ── */}
         <Text style={styles.sectionTitle}>Account</Text>
         <View style={styles.card}>
@@ -872,6 +949,78 @@ const styles = StyleSheet.create({
     textAlign: "center", marginBottom: 6, minWidth: 200,
   },
   heroSub: { color: C.textSecondary, fontSize: 13 },
+  proBadge: {
+    marginTop: 12,
+    backgroundColor: "rgba(250,199,117,0.18)",
+    borderWidth: 1,
+    borderColor: Palette.pawGold,
+    borderRadius: Radius.full,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  proBadgeText: {
+    color: Palette.pawGold,
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  proUpsellCard: {
+    marginHorizontal: Spacing.xl,
+    backgroundColor: "rgba(250,199,117,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(250,199,117,0.3)",
+    borderRadius: Radius.lg,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  proUpsellEmoji: { fontSize: 32 },
+  proUpsellTitle: { color: C.text, fontSize: 15, fontWeight: "800" },
+  proUpsellSub: { color: C.textSecondary, fontSize: 12, marginTop: 2 },
+  proUpsellArrow: { color: Palette.pawGold, fontSize: 22, fontWeight: "800" },
+
+  // Pro active state
+  proActiveCard: {
+    marginHorizontal: Spacing.xl,
+    backgroundColor: "rgba(250,199,117,0.1)",
+    borderWidth: 1,
+    borderColor: Palette.pawGold,
+    borderRadius: Radius.lg,
+    padding: 16,
+  },
+  proActiveHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 14,
+  },
+  proActiveEmoji: { fontSize: 32 },
+  proActiveTitle: { color: Palette.pawGold, fontSize: 16, fontWeight: "800" },
+  proActiveSub: { color: C.textSecondary, fontSize: 12, marginTop: 2 },
+  manageBtn: {
+    backgroundColor: "rgba(250,199,117,0.18)",
+    borderWidth: 1,
+    borderColor: "rgba(250,199,117,0.4)",
+    borderRadius: Radius.md,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  manageBtnText: { color: Palette.pawGold, fontSize: 14, fontWeight: "700" },
+
+  // Dev-only Pro toggle
+  devProToggle: {
+    marginHorizontal: Spacing.xl,
+    marginTop: 8,
+    backgroundColor: "rgba(231,111,81,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(231,111,81,0.4)",
+    borderStyle: "dashed",
+    borderRadius: Radius.md,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  devProToggleText: { color: "#E76F51", fontSize: 12, fontWeight: "700", letterSpacing: 0.5 },
 
   // Sections
   sectionTitle: {

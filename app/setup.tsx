@@ -268,6 +268,7 @@ export function WheelPicker({
 export default function SetupScreen() {
   const [step, setStep] = useState(1);
   const setDog = useStore((s) => s.setDog);
+  const isPro = useStore((s) => s.isPro);
 
   // Step 1 — Dog name
   const [dogName, setDogName] = useState("");
@@ -354,10 +355,19 @@ export default function SetupScreen() {
     else router.back();
   };
 
-  const togglePrograms = (slug: string) =>
-    setSelectedPrograms((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
-    );
+  const togglePrograms = (slug: string) => {
+    setSelectedPrograms((prev) => {
+      const isSelected = prev.includes(slug);
+      // Removing is always allowed
+      if (isSelected) return prev.filter((s) => s !== slug);
+      // Adding: free users are capped at 1 active program
+      if (!isPro && prev.length >= 1) {
+        router.push("/paywall" as any);
+        return prev; // unchanged
+      }
+      return [...prev, slug];
+    });
+  };
 
   // Toggle helpers
   const toggleGoal = (id: string) =>
@@ -891,6 +901,8 @@ export default function SetupScreen() {
               {PROGRAM_CARDS.map((p) => {
                 const sel = selectedPrograms.includes(p.slug);
                 const isRecommended = recommendedSet.has(p.slug);
+                // Pro-locked: free user already has 1 selected and this isn't it
+                const proLocked = !isPro && !sel && selectedPrograms.length >= 1;
                 return (
                   <TouchableOpacity
                     key={p.slug}
@@ -899,7 +911,7 @@ export default function SetupScreen() {
                     activeOpacity={0.8}
                   >
                     <View style={styles.programCardLeft}>
-                      <Text style={styles.programCardEmoji}>{p.emoji}</Text>
+                      <Text style={styles.programCardEmoji}>{proLocked ? "🔒" : p.emoji}</Text>
                     </View>
                     <View style={styles.programCardBody}>
                       <View style={styles.programCardHeader}>
@@ -912,9 +924,14 @@ export default function SetupScreen() {
                         >
                           {p.title}
                         </Text>
-                        {isRecommended && (
+                        {isRecommended && !proLocked && (
                           <View style={styles.recommendedBadge}>
                             <Text style={styles.recommendedBadgeText}>RECOMMENDED</Text>
+                          </View>
+                        )}
+                        {proLocked && (
+                          <View style={styles.proBadge}>
+                            <Text style={styles.proBadgeText}>PRO</Text>
                           </View>
                         )}
                       </View>
@@ -1222,6 +1239,16 @@ const styles = StyleSheet.create({
   },
   recommendedBadgeText: {
     color: Palette.questNight, fontSize: 9, fontWeight: "800", letterSpacing: 0.5,
+  },
+  proBadge: {
+    backgroundColor: "rgba(127,119,221,0.2)",
+    borderWidth: 1,
+    borderColor: Palette.levelPurple,
+    borderRadius: Radius.full,
+    paddingHorizontal: 8, paddingVertical: 2,
+  },
+  proBadgeText: {
+    color: Palette.levelPurple, fontSize: 9, fontWeight: "800", letterSpacing: 0.5,
   },
   programCheck: {
     width: 24, height: 24, borderRadius: 12,

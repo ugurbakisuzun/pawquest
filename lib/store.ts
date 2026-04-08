@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { ALL_MISSIONS_BONUS_XP, generateDailyMissions, Mission, todayDateStr } from "./missions";
+import { fetchCustomerInfo, hasProEntitlement } from "./purchases";
 import { supabase } from "./supabase";
 
 export interface Dog {
@@ -116,6 +117,10 @@ interface AppState {
   loadDailyMissions: (dogId: string) => Promise<void>;
   completeDailyMission: (dogId: string, missionId: string) => Promise<void>;
   undoDailyMission: (dogId: string, missionId: string) => Promise<void>;
+  // Pro / RevenueCat
+  isPro: boolean;
+  loadProStatus: () => Promise<void>;
+  setProForDev: (value: boolean) => void;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -563,4 +568,16 @@ export const useStore = create<AppState>((set, get) => ({
     const newCompletedIds = completedDailyIds.filter((id) => id !== missionId);
     set({ completedDailyIds: newCompletedIds, allDailyDone: false });
   },
+
+  // ── Pro / RevenueCat ──
+
+  isPro: false,
+
+  loadProStatus: async () => {
+    const info = await fetchCustomerInfo();
+    set({ isPro: hasProEntitlement(info) });
+  },
+
+  // Dev-only override so we can test gating before RevenueCat keys are wired up
+  setProForDev: (value: boolean) => set({ isPro: value }),
 }));

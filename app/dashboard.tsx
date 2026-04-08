@@ -51,6 +51,7 @@ export default function DashboardScreen() {
     undoDailyMission,
     checkAndAwardBadges,
     recalculateStreak,
+    isPro,
   } = useStore();
   const [loading, setLoading] = useState(!dog);
   const [allPrograms, setAllPrograms] = useState<any[]>([]);
@@ -158,10 +159,19 @@ export default function DashboardScreen() {
     setEditProgramsOpen(true);
   };
 
-  const toggleEditingSlug = (slug: string) =>
-    setEditingSlugs((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
-    );
+  const toggleEditingSlug = (slug: string) => {
+    setEditingSlugs((prev) => {
+      const isSelected = prev.includes(slug);
+      if (isSelected) return prev.filter((s) => s !== slug);
+      // Free users capped at 1 active program
+      if (!isPro && prev.length >= 1) {
+        setEditProgramsOpen(false);
+        router.push("/paywall" as any);
+        return prev;
+      }
+      return [...prev, slug];
+    });
+  };
 
   const saveEditPrograms = async () => {
     if (!dog) return;
