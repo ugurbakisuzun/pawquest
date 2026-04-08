@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PawQuest — Level up your dog's life</title>
+  <meta name="description" content="The gamified AI dog training app. XP, levels, streaks, daily quests, and an AI coach in your pocket. Join the waitlist." />
+
+  <!-- Open Graph / social -->
+  <meta property="og:title" content="PawQuest — Level up your dog's life" />
+  <meta property="og:description" content="Gamified AI dog training. Turn training into a game your dog actually wants to play." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0F0B2E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ───── Reset + Base ───── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --night: #0F0B2E;
+      --night-2: #1A1742;
+      --night-3: #211D52;
+      --gold: #FAC775;
+      --gold-bright: #FFD685;
+      --purple: #7F77DD;
+      --green: #1D9E75;
+      --coral: #E76F51;
+      --text: #FFFFFF;
+      --text-2: rgba(255, 255, 255, 0.7);
+      --text-3: rgba(255, 255, 255, 0.5);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--night);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; }
+    img { max-width: 100%; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ───── Background ambience ───── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(127,119,221,0.18), transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(250,199,117,0.12), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ───── Nav ───── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(15, 11, 46, 0.7);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 20px;
+    }
+    .logo-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .nav-cta {
+      background: var(--gold);
+      color: var(--night);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: transform .15s ease, box-shadow .2s ease;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(250,199,117,0.3); }
+
+    /* ───── Hero ───── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      padding: 80px 0 100px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(250,199,117,0.12);
+      border: 1px solid rgba(250,199,117,0.25);
+      color: var(--gold);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+    .hero-eyebrow::before { content: '🐾'; font-size: 14px; }
+
+    h1.hero-title {
+      font-size: clamp(38px, 6vw, 64px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+    .hero-title .highlight {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-2);
+      max-width: 540px;
+      margin-bottom: 32px;
+    }
+
+    /* Email form */
+    .email-form {
+      display: flex;
+      gap: 8px;
+      max-width: 460px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 6px;
+      transition: border-color .2s;
+    }
+    .email-form:focus-within { border-color: var(--gold); }
+
+    .email-form input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      padding: 12px 14px;
+      outline: none;
+    }
+    .email-form input::placeholder { color: var(--text-3); }
+
+    .email-form button {
+      background: var(--gold);
+      color: var(--night);
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 22px;
+      border-radius: 10px;
+      transition: transform .15s ease, box-shadow .2s ease;
+      white-space: nowrap;
+    }
+    .email-form button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 30px rgba(250,199,117,0.35);
+    }
+    .email-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .form-status {
+      margin-top: 14px;
+      font-size: 13px;
+      min-height: 20px;
+    }
+    .form-status.success { color: var(--green); font-weight: 600; }
+    .form-status.error { color: var(--coral); }
+
+    .hero-microcopy {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .hero-microcopy span { display: inline-flex; align-items: center; gap: 5px; }
+
+    /* ───── Phone Mockup ───── */
+    .phone-wrap {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .phone {
+      width: 320px;
+      height: 660px;
+      background: var(--night-2);
+      border: 8px solid #2a2660;
+      border-radius: 44px;
+      padding: 22px 18px;
+      position: relative;
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255,255,255,0.05),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      width: 110px; height: 28px;
+      background: #0a0820;
+      border-radius: 18px;
+    }
+
+    .phone-content { padding-top: 36px; }
+
+    .phone-greeting { color: var(--text-3); font-size: 12px; }
+    .phone-name { font-size: 22px; font-weight: 800; margin-top: 2px; margin-bottom: 18px; }
+
+    .phone-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .phone-row { display: flex; align-items: center; justify-content: space-between; }
+    .phone-dog-info { display: flex; align-items: center; gap: 10px; }
+    .phone-dog-emoji {
+      width: 38px; height: 38px;
+      border-radius: 999px;
+      background: var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .phone-dog-name { font-weight: 700; font-size: 14px; }
+    .phone-dog-meta { color: var(--gold); font-size: 11px; margin-top: 1px; }
+    .phone-lvl-pill {
+      background: rgba(250,199,117,0.18);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.4px;
+    }
+
+    .phone-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .phone-bar-fill {
+      width: 65%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+      border-radius: 999px;
+    }
+    .phone-xp-row {
+      display: flex; justify-content: space-between;
+      margin-top: 8px; font-size: 11px;
+    }
+    .phone-xp-row .left { color: var(--gold); font-weight: 700; }
+    .phone-xp-row .right { color: var(--text-3); }
+
+    .phone-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .phone-stat {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      text-align: center;
+    }
+    .phone-stat-emoji { font-size: 16px; }
+    .phone-stat-val { font-weight: 800; font-size: 14px; margin-top: 2px; }
+    .phone-stat-val.gold { color: var(--gold); }
+    .phone-stat-val.green { color: var(--green); }
+    .phone-stat-lbl { color: var(--text-3); font-size: 9px; margin-top: 1px; }
+
+    .phone-mission {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .phone-mission-icon {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      background: rgba(250,199,117,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .phone-mission-text { flex: 1; }
+    .phone-mission-title { font-size: 12px; font-weight: 700; }
+    .phone-mission-sub { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+    .phone-mission-xp {
+      background: rgba(250,199,117,0.18);
+      color: var(--gold);
+      font-size: 9px; font-weight: 800;
+      padding: 3px 8px; border-radius: 999px;
+    }
+
+    /* ───── Section base ───── */
+    section.s {
+      position: relative;
+      z-index: 1;
+      padding: 100px 0;
+    }
+
+    .section-eyebrow {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: clamp(30px, 4vw, 46px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 18px;
+    }
+    .section-sub {
+      font-size: 17px;
+      color: var(--text-2);
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 60px;
+    }
+
+    /* ───── Features grid ───── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--night-2);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .25s ease, border-color .25s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(250,199,117,0.4);
+    }
+
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 18px;
+    }
+    .feature-icon.gold { background: rgba(250,199,117,0.15); }
+    .feature-icon.purple { background: rgba(127,119,221,0.15); }
+    .feature-icon.green { background: rgba(29,158,117,0.15); }
+    .feature-icon.coral { background: rgba(231,111,81,0.15); }
+
+    .feature-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .feature-text {
+      color: var(--text-2);
+      font-size: 15px;
+    }
+
+    /* ───── How it works ───── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .step-card {
+      text-align: center;
+      padding: 20px;
+    }
+    .step-num {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      background: var(--gold);
+      color: var(--night);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 900;
+      margin: 0 auto 18px;
+      box-shadow: 0 10px 30px rgba(250,199,117,0.25);
+    }
+    .step-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .step-text { color: var(--text-2); font-size: 14px; }
+
+    /* ───── AI Coach showcase ───── */
+    .coach-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .coach-bubble-wrap {
+      background: var(--night-2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+    }
+    .coach-msg {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .coach-msg.user { justify-content: flex-end; }
+    .coach-avatar {
+      width: 36px; height: 36px; border-radius: 999px;
+      background: var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .coach-msg.user .coach-avatar { background: var(--purple); }
+    .coach-bubble {
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px 16px 16px 4px;
+      padding: 12px 16px;
+      font-size: 14px;
+      max-width: 80%;
+      line-height: 1.5;
+    }
+    .coach-msg.user .coach-bubble {
+      background: rgba(250,199,117,0.12);
+      border-radius: 16px 16px 4px 16px;
+    }
+
+    .coach-info h2 {
+      font-size: clamp(28px, 3.5vw, 40px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 18px;
+    }
+    .coach-info p {
+      color: var(--text-2);
+      font-size: 16px;
+      margin-bottom: 14px;
+    }
+    .coach-info .built-with {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: var(--text-2);
+      margin-top: 6px;
+    }
+    .built-with strong { color: var(--text); }
+
+    /* ───── Roi spotlight ───── */
+    .roi-card {
+      background: linear-gradient(135deg, rgba(250,199,117,0.08), rgba(127,119,221,0.08));
+      border: 1px solid rgba(250,199,117,0.25);
+      border-radius: 28px;
+      padding: 50px 40px;
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .roi-emoji { font-size: 60px; margin-bottom: 16px; }
+    .roi-title { font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+    .roi-quote {
+      color: var(--text-2);
+      font-size: 17px;
+      max-width: 540px;
+      margin: 0 auto 16px;
+      font-style: italic;
+    }
+    .roi-byline {
+      font-size: 13px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ───── Final CTA ───── */
+    .final-cta {
+      text-align: center;
+      padding: 90px 0 60px;
+    }
+    .final-cta h2 {
+      font-size: clamp(34px, 5vw, 54px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin-bottom: 16px;
+    }
+    .final-cta p {
+      color: var(--text-2);
+      font-size: 17px;
+      margin-bottom: 32px;
+    }
+    .final-cta .email-form {
+      margin: 0 auto;
+    }
+
+    /* ───── Footer ───── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 36px 0;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 13px;
+    }
+    footer .logo { display: inline-flex; margin-bottom: 14px; }
+
+    /* ───── Responsive ───── */
+    @media (max-width: 900px) {
+      .hero { padding: 50px 0 60px; }
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 50px;
+      }
+      .phone-wrap { transform: scale(0.92); }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .coach-grid { grid-template-columns: 1fr; gap: 40px; }
+      section.s { padding: 70px 0; }
+    }
+
+    @media (max-width: 520px) {
+      .container { padding: 0 18px; }
+      .nav-inner { padding: 14px 0; }
+      .nav-cta { padding: 8px 14px; font-size: 13px; }
+      .hero-microcopy { flex-wrap: wrap; gap: 8px; }
+      .email-form { flex-direction: column; padding: 8px; }
+      .email-form input { padding: 12px; }
+      .email-form button { width: 100%; padding: 14px; }
+      .phone { width: 280px; height: 580px; }
+      .feature-card { padding: 26px; }
+      .roi-card { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ───── NAV ───── -->
+  <nav>
+    <div class="container nav-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark">🐾</span>
+        <span>PawQuest</span>
+      </a>
+      <a href="#join" class="nav-cta">Join Waitlist</a>
+    </div>
+  </nav>
+
+  <!-- ───── HERO ───── -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="hero-eyebrow">Coming soon · iOS &amp; Android</span>
+        <h1 class="hero-title">
+          Level up your<br />
+          <span class="highlight">dog's life.</span>
+        </h1>
+        <p class="hero-sub">
+          The gamified AI dog training app. Earn XP, build streaks, conquer daily quests — turn training into a game your dog actually wants to play.
+        </p>
+
+        <form class="email-form" id="hero-form">
+          <input type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+          <button type="submit">Join the waitlist →</button>
+        </form>
+        <div class="form-status" id="hero-status"></div>
+
+        <div class="hero-microcopy">
+          <span>🔒 No spam, ever</span>
+          <span>🎁 Early access</span>
+          <span>🐾 Free to join</span>
+        </div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-content">
+            <div class="phone-greeting">Good morning,</div>
+            <div class="phone-name">Roi 🐶</div>
+
+            <div class="phone-card">
+              <div class="phone-row">
+                <div class="phone-dog-info">
+                  <div class="phone-dog-emoji">🦮</div>
+                  <div>
+                    <div class="phone-dog-name">Roi</div>
+                    <div class="phone-dog-meta">Level 3 · Maltichon</div>
+                  </div>
+                </div>
+                <div class="phone-lvl-pill">LVL 3</div>
+              </div>
+              <div class="phone-bar"><div class="phone-bar-fill"></div></div>
+              <div class="phone-xp-row">
+                <span class="left">650 XP</span>
+                <span class="right">350 XP to Level 4</span>
+              </div>
+            </div>
+
+            <div class="phone-stats">
+              <div class="phone-stat">
+                <div class="phone-stat-emoji">🔥</div>
+                <div class="phone-stat-val gold">7</div>
+                <div class="phone-stat-lbl">Day streak</div>
+              </div>
+              <div class="phone-stat">
+                <div class="phone-stat-emoji">⭐</div>
+                <div class="phone-stat-val">650</div>
+                <div class="phone-stat-lbl">Total XP</div>
+              </div>
+              <div class="phone-stat">
+                <div class="phone-stat-emoji">🏅</div>
+                <div class="phone-stat-val green">Lv.3</div>
+                <div class="phone-stat-lbl">Level</div>
+              </div>
+            </div>
+
+            <div class="phone-mission">
+              <div class="phone-mission-icon">🐾</div>
+              <div class="phone-mission-text">
+                <div class="phone-mission-title">Daily Training Session</div>
+                <div class="phone-mission-sub">Complete today's program</div>
+              </div>
+              <div class="phone-mission-xp">+30 XP</div>
+            </div>
+            <div class="phone-mission">
+              <div class="phone-mission-icon">🎯</div>
+              <div class="phone-mission-text">
+                <div class="phone-mission-title">Practice a Trick</div>
+                <div class="phone-mission-sub">Any trick from the library</div>
+              </div>
+              <div class="phone-mission-xp">+20 XP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── FEATURES ───── -->
+  <section class="s" id="features">
+    <div class="container">
+      <div class="section-eyebrow">Why PawQuest</div>
+      <h2 class="section-title">Training that actually sticks — because it's fun.</h2>
+      <p class="section-sub">
+        Every dog training app teaches the same tricks. PawQuest is the only one your dog will drag you to.
+      </p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon gold">🏆</div>
+          <h3 class="feature-title">XP &amp; Levels</h3>
+          <p class="feature-text">Earn XP for every session, level your dog from Curious Pup all the way to Alpha Quester. Six levels, real progression.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon green">🔥</div>
+          <h3 class="feature-title">Daily Streaks</h3>
+          <p class="feature-text">Train every day, build the habit, never break the chain. Streaks are the secret weapon behind every well-trained dog.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon purple">🤖</div>
+          <h3 class="feature-title">Built-in AI Coach</h3>
+          <p class="feature-text">Stuck on a behaviour? Ask PawAI. Powered by Claude, trained on dog behaviour science, available 24/7 inside the app.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon coral">🐾</div>
+          <h3 class="feature-title">Real Programs</h3>
+          <p class="feature-text">Separation anxiety, recall, leash walking, potty training. Step-by-step day plans with voice prompts and instant feedback.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── HOW IT WORKS ───── -->
+  <section class="s">
+    <div class="container">
+      <div class="section-eyebrow">How it works</div>
+      <h2 class="section-title">Three steps. Five minutes a day.</h2>
+      <p class="section-sub">No clickers, no jargon, no 90-page PDFs. Just open the app and start.</p>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3 class="step-title">Pick your program</h3>
+          <p class="step-text">Choose what to focus on — separation anxiety, recall, potty training, leash walking, or all of them.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3 class="step-title">Train 5 minutes</h3>
+          <p class="step-text">Follow the guided session. Tap to start, voice prompts at every step, AI feedback when you finish.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3 class="step-title">Watch them level up</h3>
+          <p class="step-text">Unlock badges, hit streaks, climb the leaderboard. Real training. Real progress. Real XP.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── AI COACH ───── -->
+  <section class="s">
+    <div class="container coach-grid">
+      <div class="coach-bubble-wrap">
+        <div class="coach-msg user">
+          <div class="coach-bubble">My dog won't stop pulling on the leash 😤</div>
+          <div class="coach-avatar">🧑</div>
+        </div>
+        <div class="coach-msg">
+          <div class="coach-avatar">🐾</div>
+          <div class="coach-bubble">
+            Try the "freeze" technique with Roi: the second the leash goes taut, stop walking. Don't pull back, don't talk — just freeze. The walk only continues when the leash is loose. Repeat for 10 minutes today and you'll see a difference by Friday. 🦮
+          </div>
+        </div>
+      </div>
+
+      <div class="coach-info">
+        <div class="section-eyebrow" style="text-align:left">Powered by AI</div>
+        <h2>An expert dog trainer in your pocket — 24/7.</h2>
+        <p>PawAI knows your dog's name, breed, level, and training history. Ask anything. Get warm, practical, jargon-free advice in seconds. It's like texting a behaviourist who never sleeps.</p>
+        <div class="built-with">Built with <strong>Claude</strong> by Anthropic</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── ROI SPOTLIGHT ───── -->
+  <section class="s">
+    <div class="container">
+      <div class="section-eyebrow">First quester</div>
+      <h2 class="section-title">Meet Roi.</h2>
+
+      <div class="roi-card">
+        <div class="roi-emoji">🦮</div>
+        <div class="roi-title">Roi · Maltichon · London</div>
+        <p class="roi-quote">
+          "PawQuest's first official quester. He's currently working on his separation anxiety program, has earned three badges, and is two days into a streak. Curious Pup, soon to be Learning Tail."
+        </p>
+        <div class="roi-byline">— The PawQuest beta journal</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── FINAL CTA ───── -->
+  <section class="s final-cta" id="join">
+    <div class="container">
+      <h2>Be one of the first questers.</h2>
+      <p>Join the waitlist. We'll let you know the moment PawQuest hits the App Store.</p>
+
+      <form class="email-form" id="footer-form">
+        <input type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+        <button type="submit">Join the waitlist →</button>
+      </form>
+      <div class="form-status" id="footer-status"></div>
+    </div>
+  </section>
+
+  <!-- ───── FOOTER ───── -->
+  <footer>
+    <div class="container">
+      <a href="#" class="logo">
+        <span class="logo-mark">🐾</span>
+        <span>PawQuest</span>
+      </a>
+      <div>© 2026 PawQuest · Level up your dog's life</div>
+    </div>
+  </footer>
+
+  <script>
+    // ───── Supabase REST waitlist signup ─────
+    const SUPABASE_URL = "https://spnlnakubbdlssxliwfp.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_bvUjdgr4t6Lu95bGdQOZaw_dQZy2AcJ";
+
+    async function joinWaitlist(email, statusEl, btn) {
+      statusEl.className = "form-status";
+      statusEl.textContent = "";
+
+      // Basic email regex (HTML5 already validates, this is a backup)
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        statusEl.className = "form-status error";
+        statusEl.textContent = "Please enter a valid email.";
+        return;
+      }
+
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Joining...";
+
+      try {
+        const res = await fetch(SUPABASE_URL + "/rest/v1/waitlist_signups", {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal",
+          },
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            source: "landing",
+            user_agent: navigator.userAgent,
+            referrer: document.referrer || null,
+          }),
+        });
+
+        if (res.ok) {
+          statusEl.className = "form-status success";
+          statusEl.textContent = "🎉 You're in! We'll be in touch.";
+          btn.textContent = "✓ Joined";
+          // Don't re-enable
+          return;
+        }
+
+        if (res.status === 409) {
+          statusEl.className = "form-status success";
+          statusEl.textContent = "🐾 You're already on the list!";
+          btn.textContent = "✓ Joined";
+          return;
+        }
+
+        // Try to read body
+        let detail = "";
+        try {
+          const data = await res.json();
+          detail = data?.message || data?.error || "";
+        } catch {}
+
+        statusEl.className = "form-status error";
+        statusEl.textContent = "Something went wrong" + (detail ? ": " + detail : "") + ". Try again?";
+        btn.disabled = false;
+        btn.textContent = originalText;
+      } catch (err) {
+        statusEl.className = "form-status error";
+        statusEl.textContent = "Network error. Check your connection and try again.";
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    function wireForm(formId, statusId) {
+      const form = document.getElementById(formId);
+      const status = document.getElementById(statusId);
+      if (!form || !status) return;
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = form.querySelector('input[name="email"]').value;
+        const btn = form.querySelector("button");
+        joinWaitlist(email, status, btn);
+      });
+    }
+
+    wireForm("hero-form", "hero-status");
+    wireForm("footer-form", "footer-status");
+  </script>
+</body>
+</html>
