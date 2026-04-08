@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import MapView, { Polyline, Marker } from "react-native-maps";
 import { Colors, Palette, Radius } from "../constants/theme";
-import { useStore } from "../lib/store";
+import { computeLevel, useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
 
 const C = Colors.dark;
@@ -243,7 +243,7 @@ export default function WalkScreen() {
       });
 
       const newXP = dog.total_xp + xp;
-      const newLevel = newXP >= 3500 ? 6 : newXP >= 2000 ? 5 : newXP >= 1000 ? 4 : newXP >= 500 ? 3 : newXP >= 200 ? 2 : 1;
+      const newLevel = computeLevel(newXP);
       const { data } = await supabase
         .from("dogs")
         .update({ total_xp: newXP, level: newLevel, last_trained_at: new Date().toISOString() })

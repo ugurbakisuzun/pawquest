@@ -45,25 +45,40 @@ export interface EarnedBadge {
   earned_at: string;
 }
 
+// Single source of truth for the level table.
+// Used everywhere XP is added or displayed. Don't inline this anywhere else.
+export const LEVELS = [
+  { level: 1, minXP: 0,    title: "Curious Pup" },
+  { level: 2, minXP: 200,  title: "Learning Tail" },
+  { level: 3, minXP: 500,  title: "Good Boy/Girl" },
+  { level: 4, minXP: 1000, title: "Focused Paw" },
+  { level: 5, minXP: 2000, title: "Training Pro" },
+  { level: 6, minXP: 3500, title: "Top Dog" },
+] as const;
+
+// Compute the level for a given XP total. Always use this when writing
+// `level` to the dogs table — never inline the comparisons.
+export function computeLevel(xp: number): number {
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS[i].minXP) return LEVELS[i].level;
+  }
+  return 1;
+}
+
 export function getLevelInfo(xp: number): {
   level: number;
   title: string;
+  currentLevelXP: number;
   nextLevelXP: number;
 } {
-  const levels = [
-    { level: 1, minXP: 0, title: "Curious Pup" },
-    { level: 2, minXP: 200, title: "Learning Tail" },
-    { level: 3, minXP: 500, title: "Good Boy/Girl" },
-    { level: 4, minXP: 1000, title: "Focused Paw" },
-    { level: 5, minXP: 2000, title: "Training Pro" },
-    { level: 6, minXP: 3500, title: "Top Dog" },
-  ];
-  const current = [...levels].reverse().find((l) => xp >= l.minXP) ?? levels[0];
-  const next = levels.find((l) => l.minXP > xp);
+  const current = [...LEVELS].reverse().find((l) => xp >= l.minXP) ?? LEVELS[0];
+  const next = LEVELS.find((l) => l.minXP > xp);
   return {
     level: current.level,
     title: current.title,
-    nextLevelXP: next?.minXP ?? 9999,
+    currentLevelXP: current.minXP,
+    // For max level, treat next as current so progress bar stays full
+    nextLevelXP: next?.minXP ?? current.minXP,
   };
 }
 
@@ -258,10 +273,19 @@ export const useStore = create<AppState>((set, get) => ({
       // Award bonus XP for badges
       const bonusXP = newBadges.reduce((sum, b) => sum + b.xp_reward, 0);
       if (bonusXP > 0) {
-        const newXP = dog.total_xp + bonusXP;
+        // Re-fetch dog to avoid clobbering XP added by concurrent calls
+        // (e.g. session XP just got written by session.tsx)
+        const { data: freshDog } = await supabase
+          .from("dogs")
+          .select("*")
+          .eq("id", dogId)
+          .single();
+        const baseXP = freshDog?.total_xp ?? dog.total_xp;
+        const newXP = baseXP + bonusXP;
+        const newLevel = computeLevel(newXP);
         const { data } = await supabase
           .from("dogs")
-          .update({ total_xp: newXP })
+          .update({ total_xp: newXP, level: newLevel })
           .eq("id", dogId)
           .select()
           .single();
@@ -343,7 +367,7 @@ export const useStore = create<AppState>((set, get) => ({
         const { data: freshDog } = await supabase.from("dogs").select("*").eq("id", dogId).single();
         const currentXP = freshDog?.total_xp ?? dog.total_xp;
         const newXP = Math.max(0, currentXP - xpToRemove);
-        const newLevel = newXP >= 3500 ? 6 : newXP >= 2000 ? 5 : newXP >= 1000 ? 4 : newXP >= 500 ? 3 : newXP >= 200 ? 2 : 1;
+        const newLevel = computeLevel(newXP);
         const { data } = await supabase
           .from("dogs")
           .update({ total_xp: newXP, level: newLevel })
@@ -502,7 +526,7 @@ export const useStore = create<AppState>((set, get) => ({
     const totalXP = mission.xp_reward + (allDone ? ALL_MISSIONS_BONUS_XP : 0);
 
     const newXP = dog.total_xp + totalXP;
-    const newLevel = newXP >= 3500 ? 6 : newXP >= 2000 ? 5 : newXP >= 1000 ? 4 : newXP >= 500 ? 3 : newXP >= 200 ? 2 : 1;
+    const newLevel = computeLevel(newXP);
 
     const { data } = await supabase
       .from("dogs")
@@ -547,7 +571,7 @@ export const useStore = create<AppState>((set, get) => ({
     // Deduct XP (mission reward + bonus if all-done bonus was awarded)
     const xpToRemove = mission.xp_reward + (wasAllDone ? ALL_MISSIONS_BONUS_XP : 0);
     const newXP = Math.max(0, dog.total_xp - xpToRemove);
-    const newLevel = newXP >= 3500 ? 6 : newXP >= 2000 ? 5 : newXP >= 1000 ? 4 : newXP >= 500 ? 3 : newXP >= 200 ? 2 : 1;
+    const newLevel = computeLevel(newXP);
 
     const { data } = await supabase
       .from("dogs")

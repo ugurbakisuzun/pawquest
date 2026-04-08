@@ -40,8 +40,11 @@ const SUGGESTIONS = [
   "My dog pulls on the leash 😤",
 ];
 
+const FREE_DAILY_MESSAGES = 5;
+
 export default function AdvisorScreen() {
-  const { dog } = useStore();
+  const { dog, isPro } = useStore();
+  const [todayCount, setTodayCount] = useState(0);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -73,6 +76,21 @@ export default function AdvisorScreen() {
       Speech.stop();
     };
   }, []);
+
+  // Load today's message count for free-tier limit
+  useEffect(() => {
+    if (!dog) return;
+    (async () => {
+      const dayStart = new Date();
+      dayStart.setHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from("advisor_message_log")
+        .select("id", { count: "exact", head: true })
+        .eq("dog_id", dog.id)
+        .gte("sent_at", dayStart.toISOString());
+      setTodayCount(count ?? 0);
+    })();
+  }, [dog?.id]);
 
   useEffect(() => {
     if (isListening) {
@@ -152,6 +170,11 @@ export default function AdvisorScreen() {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
+    // Free-tier daily limit gating
+    if (!isPro && todayCount >= FREE_DAILY_MESSAGES) {
+      router.push("/paywall" as any);
+      return;
+    }
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -198,6 +221,12 @@ Rules: Always call the dog by name. Max 3 short paragraphs. Give numbered action
       setMessages((prev) => [...prev, assistantMsg]);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
       speakMessage(replyText, assistantId);
+
+      // Log this message for daily limit tracking + bump local counter
+      if (dog) {
+        await supabase.from("advisor_message_log").insert({ dog_id: dog.id });
+        setTodayCount((c) => c + 1);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -244,6 +273,26 @@ Rules: Always call the dog by name. Max 3 short paragraphs. Give numbered action
             </Text>
           </View>
         </View>
+        {!isPro && (
+          <TouchableOpacity
+            style={[
+              styles.limitPill,
+              todayCount >= FREE_DAILY_MESSAGES && styles.limitPillFull,
+            ]}
+            onPress={() => router.push("/paywall" as any)}
+          >
+            <Text
+              style={[
+                styles.limitPillText,
+                todayCount >= FREE_DAILY_MESSAGES && styles.limitPillTextFull,
+              ]}
+            >
+              {todayCount >= FREE_DAILY_MESSAGES
+                ? "Daily limit · Tap to upgrade"
+                : `${todayCount}/${FREE_DAILY_MESSAGES} today`}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* ── Messages ── */}
@@ -376,6 +425,22 @@ const styles = StyleSheet.create({
   aiAvatarEmoji: { fontSize: 22 },
   aiName: { color: C.text, fontSize: 16, fontWeight: "700" },
   aiStatus: { color: C.success, fontSize: 12, marginTop: 2 },
+  limitPill: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    backgroundColor: "rgba(250,199,117,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(250,199,117,0.3)",
+    borderRadius: Radius.full,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  limitPillFull: {
+    backgroundColor: "rgba(231,111,81,0.12)",
+    borderColor: "rgba(231,111,81,0.4)",
+  },
+  limitPillText: { color: Palette.pawGold, fontSize: 11, fontWeight: "700" },
+  limitPillTextFull: { color: "#E76F51" },
   chatArea: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
   bubble: { maxWidth: "85%", padding: 14, borderRadius: 18, marginBottom: 4 },
   bubbleAI: {

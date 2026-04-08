@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Colors, Palette, Radius, Spacing } from "../constants/theme";
 import { sendSessionCompleteNotification } from "../lib/notifications";
-import { useStore } from "../lib/store";
+import { computeLevel, useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
 
 const C = Colors.dark;
@@ -47,18 +47,6 @@ interface StepAnalysis {
   feedback: string;
 }
 
-function getNewLevel(xp: number): number {
-  if (xp >= 9000) return 10;
-  if (xp >= 6500) return 9;
-  if (xp >= 4500) return 8;
-  if (xp >= 3000) return 7;
-  if (xp >= 1800) return 6;
-  if (xp >= 1000) return 5;
-  if (xp >= 500) return 4;
-  if (xp >= 200) return 3;
-  if (xp >= 50) return 2;
-  return 1;
-}
 
 export default function SessionScreen() {
   const params = useLocalSearchParams();
@@ -260,12 +248,15 @@ Analyse in 2 short sentences: what the behaviour indicates, and one actionable t
     if (!dog || saving) return;
     setSaving(true);
     try {
+      // Cache initial level so we can detect level-up after ALL XP additions
+      // (session XP + daily mission XP + badge XP) are applied.
+      const initialLevel = dog.level;
+
       const xpEarned = isTrickMode
         ? trickXp
         : Math.round(50 + (dayData?.steps.length ?? 5) * 10);
       const newXP = dog.total_xp + xpEarned;
-      const newLevel = getNewLevel(newXP);
-      const leveledUp = newLevel > dog.level;
+      const newLevel = computeLevel(newXP);
       const now = new Date();
 
       const lastTrained = dog.last_trained_at
@@ -331,19 +322,27 @@ Analyse in 2 short sentences: what the behaviour indicates, and one actionable t
 
       await sendSessionCompleteNotification(dog.name, xpEarned, newStreak);
 
+      // Read FINAL dog state after all XP additions (session + missions + badges)
+      // and decide level-up based on that final level vs the initial level we
+      // cached at the top of handleDone.
+      const finalDog = useStore.getState().dog;
+      const finalLevel = finalDog?.level ?? newLevel;
+      const finalXP = finalDog?.total_xp ?? newXP;
+      const leveledUp = finalLevel > initialLevel;
+
       if (newBadges.length > 0) {
         // Navigate with badge info — replace so session is removed from stack
         const badgeNames = newBadges.map((b) => `${b.emoji} ${b.name}`).join(", ");
         const badgeXP = newBadges.reduce((s, b) => s + b.xp_reward, 0);
         router.replace(
           leveledUp
-            ? (`/levelup?level=${newLevel}&xp=${newXP}&name=${dog.name}&badges=${encodeURIComponent(badgeNames)}&badgeXP=${badgeXP}` as any)
+            ? (`/levelup?level=${finalLevel}&xp=${finalXP}&name=${dog.name}&badges=${encodeURIComponent(badgeNames)}&badgeXP=${badgeXP}` as any)
             : (`/dashboard?newBadges=${encodeURIComponent(badgeNames)}&badgeXP=${badgeXP}` as any),
         );
       } else {
         router.replace(
           leveledUp
-            ? (`/levelup?level=${newLevel}&xp=${newXP}&name=${dog.name}` as any)
+            ? (`/levelup?level=${finalLevel}&xp=${finalXP}&name=${dog.name}` as any)
             : ("/dashboard" as any),
         );
       }

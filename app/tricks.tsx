@@ -10,7 +10,7 @@ import {
     View,
 } from "react-native";
 import { Colors, Palette, Radius, Spacing } from "../constants/theme";
-import { useStore } from "../lib/store";
+import { computeLevel, useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
 
 const C = Colors.dark;
@@ -42,6 +42,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   Sport: "rgba(55,138,221,0.08)",
 };
 
+const FREE_TRICK_LIMIT = 5;
+
 export default function TricksScreen() {
   const {
     dog,
@@ -49,11 +51,15 @@ export default function TricksScreen() {
     completedMissions,
     addCompletedMission,
     removeCompletedMission,
+    isPro,
   } = useStore();
   const [tricks, setTricks] = useState<Trick[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Free trick IDs = first N by min_level (regardless of category filter)
+  const freeTrickIds = new Set(tricks.slice(0, FREE_TRICK_LIMIT).map((t) => t.id));
 
   const categories = ["All", "Basic", "Fun", "Safety", "Advanced", "Sport"];
 
@@ -81,27 +87,21 @@ export default function TricksScreen() {
       ? tricks
       : tricks.filter((t) => t.category === selectedCategory);
   const isLocked = (trick: Trick) => (dog ? trick.min_level > dog.level : true);
+  const isProLocked = (trick: Trick) => !isPro && !freeTrickIds.has(trick.id);
 
   const handleTrickPress = async (trick: Trick) => {
     if (isLocked(trick)) return;
+    if (isProLocked(trick)) {
+      router.push("/paywall" as any);
+      return;
+    }
     const done = completedMissions.includes(trick.id);
 
     if (done) {
       // Undo — yeşili kaldır + XP düşür
       if (!dog) return;
       const newXP = Math.max(0, dog.total_xp - trick.xp_reward);
-      const newLevel =
-        newXP >= 3500
-          ? 6
-          : newXP >= 2000
-            ? 5
-            : newXP >= 1000
-              ? 4
-              : newXP >= 500
-                ? 3
-                : newXP >= 200
-                  ? 2
-                  : 1;
+      const newLevel = computeLevel(newXP);
       try {
         const { data, error } = await supabase
           .from("dogs")
@@ -185,6 +185,8 @@ export default function TricksScreen() {
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
         {filteredTricks.map((trick) => {
           const locked = isLocked(trick);
+          const proLocked = !locked && isProLocked(trick);
+          const anyLock = locked || proLocked;
           const expanded = expandedId === trick.id;
           const done = completedMissions.includes(trick.id);
 
@@ -193,10 +195,10 @@ export default function TricksScreen() {
               key={trick.id}
               style={[
                 styles.trickCard,
-                locked && styles.trickCardLocked,
+                anyLock && styles.trickCardLocked,
                 done && styles.trickCardDone,
                 {
-                  backgroundColor: locked
+                  backgroundColor: anyLock
                     ? "rgba(255,255,255,0.02)"
                     : done
                       ? "rgba(29,158,117,0.06)"
@@ -210,7 +212,7 @@ export default function TricksScreen() {
               <View style={styles.trickHeader}>
                 <View style={styles.trickLeft}>
                   <Text style={styles.trickIcon}>
-                    {locked
+                    {anyLock
                       ? "🔒"
                       : done
                         ? "✅"
@@ -220,7 +222,7 @@ export default function TricksScreen() {
                     <Text
                       style={[
                         styles.trickName,
-                        locked && styles.trickNameLocked,
+                        anyLock && styles.trickNameLocked,
                       ]}
                     >
                       {trick.name}
@@ -243,7 +245,12 @@ export default function TricksScreen() {
                   {locked && (
                     <Text style={styles.lockLabel}>Lv.{trick.min_level}</Text>
                   )}
-                  {!locked && !done && (
+                  {proLocked && (
+                    <View style={styles.proPill}>
+                      <Text style={styles.proPillText}>PRO</Text>
+                    </View>
+                  )}
+                  {!anyLock && !done && (
                     <Text style={styles.expandIcon}>
                       {expanded ? "▲" : "▼"}
                     </Text>
@@ -252,12 +259,12 @@ export default function TricksScreen() {
                 </View>
               </View>
 
-              {!locked && !done && (
+              {!anyLock && !done && (
                 <Text style={styles.trickDesc}>{trick.description}</Text>
               )}
 
               {/* Steps — expanded */}
-              {expanded && !locked && !done && (
+              {expanded && !anyLock && !done && (
                 <View style={styles.stepsContainer}>
                   <Text style={styles.stepsTitle}>How to teach it:</Text>
                   {trick.steps.map((step, index) => (
@@ -286,6 +293,11 @@ export default function TricksScreen() {
               {locked && (
                 <Text style={styles.lockDesc}>
                   Reach Level {trick.min_level} to unlock this trick
+                </Text>
+              )}
+              {proLocked && (
+                <Text style={styles.lockDesc}>
+                  Unlock all 12 tricks with Pawlo Pro · tap to upgrade
                 </Text>
               )}
             </TouchableOpacity>
@@ -378,6 +390,20 @@ const styles = StyleSheet.create({
   xpPillText: { color: C.xp, fontSize: 11, fontWeight: "600" },
   xpPillTextDone: { color: C.success },
   lockLabel: { color: C.textSecondary, fontSize: 11 },
+  proPill: {
+    backgroundColor: "rgba(127,119,221,0.18)",
+    borderWidth: 1,
+    borderColor: Palette.levelPurple,
+    borderRadius: Radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  proPillText: {
+    color: Palette.levelPurple,
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
   expandIcon: { color: C.textSecondary, fontSize: 12 },
   undoHint: { color: C.success, fontSize: 11 },
   trickDesc: { color: C.textSecondary, fontSize: 13, lineHeight: 20 },

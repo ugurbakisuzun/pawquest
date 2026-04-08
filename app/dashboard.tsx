@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Colors, Palette, Radius, Spacing } from "../constants/theme";
 import { ALL_MISSIONS_BONUS_XP } from "../lib/missions";
-import { getRarityColor, useStore } from "../lib/store";
+import { computeLevel, getLevelInfo, getRarityColor, useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
 
 const C = Colors.dark;
@@ -217,7 +217,7 @@ export default function DashboardScreen() {
     if (!dog) return;
     // Deduct trick XP
     const newXP = Math.max(0, dog.total_xp - trickXpReward);
-    const newLevel = newXP >= 3500 ? 6 : newXP >= 2000 ? 5 : newXP >= 1000 ? 4 : newXP >= 500 ? 3 : newXP >= 200 ? 2 : 1;
+    const newLevel = computeLevel(newXP);
     const { data, error } = await supabase
       .from("dogs")
       .update({ total_xp: newXP, level: newLevel })
@@ -272,7 +272,7 @@ export default function DashboardScreen() {
       const saXP = xpEvent?.[0]?.amount ?? 0;
       if (saXP > 0) {
         const newXP = Math.max(0, dog.total_xp - saXP);
-        const newLevel = newXP >= 3500 ? 6 : newXP >= 2000 ? 5 : newXP >= 1000 ? 4 : newXP >= 500 ? 3 : newXP >= 200 ? 2 : 1;
+        const newLevel = computeLevel(newXP);
         const { data, error } = await supabase
           .from("dogs")
           .update({ total_xp: newXP, level: newLevel })
@@ -349,12 +349,17 @@ export default function DashboardScreen() {
 
   if (!dog) return null;
 
-  const xpPercent = Math.min(
-    Math.round(((dog.total_xp % 1000) / 1000) * 100),
-    100,
-  );
-  const xpToNext = 1000 - (dog.total_xp % 1000);
+  // Compute progress within the current level using the real level thresholds
+  const levelInfo = getLevelInfo(dog.total_xp);
+  const xpInLevel = dog.total_xp - levelInfo.currentLevelXP;
+  const xpForLevel = Math.max(1, levelInfo.nextLevelXP - levelInfo.currentLevelXP);
+  const isMaxLevel = levelInfo.nextLevelXP === levelInfo.currentLevelXP;
+  const xpPercent = isMaxLevel ? 100 : Math.min(100, Math.round((xpInLevel / xpForLevel) * 100));
+  const xpToNext = isMaxLevel ? 0 : levelInfo.nextLevelXP - dog.total_xp;
   const unlockedTricks = tricks.filter((t) => t.min_level <= dog.level);
+  // Free trick IDs = first 5 tricks (already sorted by min_level in loadTricks)
+  const FREE_TRICK_LIMIT = 5;
+  const freeTrickIds = new Set(tricks.slice(0, FREE_TRICK_LIMIT).map((t) => t.id));
 
   const CATEGORY_ICONS: Record<string, string> = {
     Basic: "🎯",
@@ -408,7 +413,9 @@ export default function DashboardScreen() {
           <View style={styles.xpLabels}>
             <Text style={styles.xpCurrent}>{dog.total_xp} XP</Text>
             <Text style={styles.xpRemaining}>
-              {xpToNext} XP to Level {dog.level + 1}
+              {isMaxLevel
+                ? "Max level reached 👑"
+                : `${xpToNext} XP to Level ${dog.level + 1}`}
             </Text>
           </View>
         </View>
@@ -783,28 +790,41 @@ export default function DashboardScreen() {
         ) : (
           unlockedTricks.slice(0, 5).map((trick) => {
             const done = completedMissions.includes(trick.id);
+            const proLocked = !isPro && !freeTrickIds.has(trick.id);
             return (
               <TouchableOpacity
                 key={trick.id}
                 style={[styles.missionCard, done && styles.missionDone]}
-                onPress={() => handleTrickPress(trick)}
+                onPress={() =>
+                  proLocked ? router.push("/paywall" as any) : handleTrickPress(trick)
+                }
               >
                 <View style={styles.missionIcon}>
                   <Text style={{ fontSize: 22 }}>
-                    {done ? "✅" : (CATEGORY_ICONS[trick.category] ?? "🐾")}
+                    {proLocked
+                      ? "🔒"
+                      : done
+                        ? "✅"
+                        : (CATEGORY_ICONS[trick.category] ?? "🐾")}
                   </Text>
                 </View>
                 <View style={styles.missionInfo}>
                   <Text style={styles.missionTitle}>{trick.name}</Text>
                   <View style={styles.missionMeta}>
                     <Text style={styles.missionCategory}>{trick.category}</Text>
-                    <View style={styles.xpPill}>
-                      <Text style={styles.xpPillText}>
-                        {done
-                          ? `−${trick.xp_reward} XP to undo`
-                          : `+${trick.xp_reward} XP`}
-                      </Text>
-                    </View>
+                    {proLocked ? (
+                      <View style={styles.proPill}>
+                        <Text style={styles.proPillText}>PRO</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.xpPill}>
+                        <Text style={styles.xpPillText}>
+                          {done
+                            ? `−${trick.xp_reward} XP to undo`
+                            : `+${trick.xp_reward} XP`}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
                 <View
@@ -1195,6 +1215,20 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   xpPillText: { color: C.xp, fontSize: 11, fontWeight: "600" },
+  proPill: {
+    backgroundColor: "rgba(127,119,221,0.18)",
+    borderWidth: 1,
+    borderColor: Palette.levelPurple,
+    borderRadius: Radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  proPillText: {
+    color: Palette.levelPurple,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
   checkCircle: {
     width: 24,
     height: 24,
