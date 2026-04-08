@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Colors, Palette, Radius, Spacing } from "../constants/theme";
 import { sendSessionCompleteNotification } from "../lib/notifications";
+import { SoundPanel } from "../components/SoundPanel";
 import { computeLevel, useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
 
@@ -76,6 +77,16 @@ export default function SessionScreen() {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const scrollRef = useRef<ScrollView>(null);
 
+  // ── Step countdown timer ──
+  type StepTimer = {
+    stepIndex: number;
+    phase: "training" | "break" | "done";
+    remaining: number;
+    paused: boolean;
+  };
+  const [stepTimer, setStepTimer] = useState<StepTimer | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const isTrickMode = !!trickName;
   const hasNativeSpeech = !!ExpoSpeechRecognitionModule;
 
@@ -109,6 +120,113 @@ export default function SessionScreen() {
       pulseAnim.setValue(1);
     }
   }, [isListening]);
+
+  // ── Step timer ──
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, []);
+
+  const tickTimer = () => {
+    setStepTimer((t) => {
+      if (!t || t.paused || t.phase === "done") return t;
+      if (t.remaining > 1) return { ...t, remaining: t.remaining - 1 };
+
+      // remaining is about to hit 0 → transition
+      const step = dayData?.steps[t.stepIndex];
+      if (t.phase === "training" && step && step.break_seconds > 0) {
+        return { ...t, phase: "break", remaining: step.break_seconds };
+      }
+
+      // Done — clear interval and auto-complete the step
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      // Defer to next tick so we don't update other state inside this setter
+      setTimeout(() => {
+        setCompletedSteps((current) => {
+          if (current.includes(t.stepIndex)) return current;
+          // Trigger voice prompt UI if applicable (mirror toggleStep behaviour)
+          if (step?.voice_prompt) {
+            setActivePromptIndex(t.stepIndex);
+            setTextInput("");
+          }
+          return [...current, t.stepIndex];
+        });
+      }, 0);
+      return { ...t, phase: "done", remaining: 0 };
+    });
+  };
+
+  const startInterval = () => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = setInterval(tickTimer, 1000);
+  };
+
+  const startStepTimer = (stepIndex: number) => {
+    const step = dayData?.steps[stepIndex];
+    if (!step || !step.duration_seconds) return;
+    setStepTimer({
+      stepIndex,
+      phase: "training",
+      remaining: step.duration_seconds,
+      paused: false,
+    });
+    startInterval();
+  };
+
+  const togglePauseTimer = () => {
+    setStepTimer((t) => {
+      if (!t || t.phase === "done") return t;
+      const nextPaused = !t.paused;
+      if (nextPaused) {
+        // Pausing — kill interval
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+        }
+      } else {
+        // Resuming — restart interval
+        startInterval();
+      }
+      return { ...t, paused: nextPaused };
+    });
+  };
+
+  const resetStepTimer = () => {
+    setStepTimer((t) => {
+      if (!t) return t;
+      const step = dayData?.steps[t.stepIndex];
+      if (!step) return t;
+      // Restart from training phase
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = setInterval(tickTimer, 1000);
+      return {
+        stepIndex: t.stepIndex,
+        phase: "training",
+        remaining: step.duration_seconds,
+        paused: false,
+      };
+    });
+  };
+
+  const stopStepTimer = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    setStepTimer(null);
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
 
   useEffect(() => {
     if (isTrickMode) {
@@ -432,17 +550,92 @@ Analyse in 2 short sentences: what the behaviour indicates, and one actionable t
                   <Text style={[styles.stepText, done && styles.stepTextDone]}>
                     {step.instruction}
                   </Text>
-                  {step.duration_seconds > 0 && (
-                    <Text style={styles.stepMeta}>
-                      ⏱ {step.duration_seconds}s
-                      {step.break_seconds > 0
-                        ? `  ·  🔄 ${step.break_seconds}s break`
-                        : ""}
-                    </Text>
+                  {step.duration_seconds > 0 && stepTimer?.stepIndex !== index && (
+                    <View style={styles.stepTimerRow}>
+                      <Text style={styles.stepMeta}>
+                        ⏱ {step.duration_seconds}s
+                        {step.break_seconds > 0
+                          ? `  ·  🔄 ${step.break_seconds}s break`
+                          : ""}
+                      </Text>
+                      {!done && (
+                        <TouchableOpacity
+                          style={styles.startTimerBtn}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            startStepTimer(index);
+                          }}
+                        >
+                          <Text style={styles.startTimerBtnText}>▶ Start</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   )}
+
+                  {/* Active timer for this step */}
+                  {stepTimer?.stepIndex === index && (
+                    <View
+                      style={[
+                        styles.timerCard,
+                        stepTimer.phase === "break" && styles.timerCardBreak,
+                        stepTimer.phase === "done" && styles.timerCardDone,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.timerPhaseLabel,
+                          stepTimer.phase === "break" && { color: Palette.streakGreen },
+                          stepTimer.phase === "done" && { color: Palette.pawGold },
+                        ]}
+                      >
+                        {stepTimer.phase === "training"
+                          ? "TRAINING"
+                          : stepTimer.phase === "break"
+                            ? "BREAK"
+                            : "DONE"}
+                      </Text>
+                      <Text style={styles.timerCountdown}>
+                        {formatTime(stepTimer.remaining)}
+                      </Text>
+                      {stepTimer.phase !== "done" && (
+                        <View style={styles.timerControls}>
+                          <TouchableOpacity
+                            style={styles.timerBtn}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              togglePauseTimer();
+                            }}
+                          >
+                            <Text style={styles.timerBtnText}>
+                              {stepTimer.paused ? "▶ Resume" : "⏸ Pause"}
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.timerBtn}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              resetStepTimer();
+                            }}
+                          >
+                            <Text style={styles.timerBtnText}>↻ Reset</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[styles.timerBtn, styles.timerBtnGhost]}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              stopStepTimer();
+                            }}
+                          >
+                            <Text style={styles.timerBtnGhostText}>✕</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  )}
+
                   {step.voice_prompt && !done && (
                     <Text style={styles.stepPromptHint}>
-                      🎙️ AI will ask after this step
+                      🎙️ Pawlo will ask after this step
                     </Text>
                   )}
                 </View>
@@ -580,8 +773,11 @@ Analyse in 2 short sentences: what the behaviour indicates, and one actionable t
           </Text>
         </TouchableOpacity>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Floating clicker + whistle for hands-free training */}
+      <SoundPanel />
     </View>
   );
 }
@@ -709,6 +905,75 @@ const styles = StyleSheet.create({
   stepTextDone: { color: C.textSecondary },
   stepMeta: { color: C.textMuted, fontSize: 11, marginTop: 4 },
   stepPromptHint: { color: Palette.levelPurple, fontSize: 11, marginTop: 4 },
+  stepTimerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 4,
+  },
+  startTimerBtn: {
+    backgroundColor: "rgba(250,199,117,0.18)",
+    borderWidth: 1,
+    borderColor: Palette.pawGold,
+    borderRadius: Radius.full,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  startTimerBtnText: {
+    color: Palette.pawGold,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.4,
+  },
+  timerCard: {
+    marginTop: 12,
+    backgroundColor: "rgba(250,199,117,0.1)",
+    borderWidth: 1,
+    borderColor: Palette.pawGold,
+    borderRadius: Radius.lg,
+    padding: 16,
+    alignItems: "center",
+  },
+  timerCardBreak: {
+    backgroundColor: "rgba(29,158,117,0.1)",
+    borderColor: Palette.streakGreen,
+  },
+  timerCardDone: {
+    backgroundColor: "rgba(127,119,221,0.08)",
+    borderColor: Palette.levelPurple,
+  },
+  timerPhaseLabel: {
+    color: Palette.pawGold,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
+  timerCountdown: {
+    color: C.text,
+    fontSize: 42,
+    fontWeight: "900",
+    letterSpacing: -1,
+    fontVariant: ["tabular-nums"],
+    marginBottom: 12,
+  },
+  timerControls: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  timerBtn: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: Radius.md,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  timerBtnText: { color: C.text, fontSize: 12, fontWeight: "700" },
+  timerBtnGhost: {
+    paddingHorizontal: 12,
+  },
+  timerBtnGhostText: { color: C.textSecondary, fontSize: 14, fontWeight: "700" },
 
   voiceCard: {
     backgroundColor: "rgba(127,119,221,0.1)",

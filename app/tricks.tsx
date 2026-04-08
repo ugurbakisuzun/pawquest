@@ -10,6 +10,7 @@ import {
     View,
 } from "react-native";
 import { Colors, Palette, Radius, Spacing } from "../constants/theme";
+import { SoundPanel } from "../components/SoundPanel";
 import { computeLevel, useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
 
@@ -303,8 +304,11 @@ export default function TricksScreen() {
             </TouchableOpacity>
           );
         })}
-        <View style={{ height: 40 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Floating clicker + whistle for hands-free training */}
+      <SoundPanel />
     </View>
   );
 }
