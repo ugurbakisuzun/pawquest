@@ -7,11 +7,17 @@ import Purchases, {
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 //
-// RevenueCat V2 uses a single project-level SDK API key for both iOS and
-// Android. Set it in .env as EXPO_PUBLIC_REVENUECAT_KEY. When unset, the
-// SDK stays in stub mode and the app behaves as "free" everywhere.
+// Set EXPO_PUBLIC_REVENUECAT_KEY in .env (or via `eas env:create`). When the
+// key is missing or doesn't match a recognised SDK key format, the wrapper
+// stays in stub mode and the whole app behaves as "free" without crashing.
+//
+// react-native-purchases accepts platform-specific public SDK keys with one
+// of these prefixes — anything else (REST API keys, secret keys, test keys
+// for server-side use) is rejected by the native SDK and crashes the app on
+// startup. Validate up front and skip configure() if the prefix is unknown.
 //
 const REVENUECAT_KEY = process.env.EXPO_PUBLIC_REVENUECAT_KEY ?? "";
+const VALID_KEY_PREFIXES = ["appl_", "goog_", "amzn_", "mac_"];
 
 // Identifiers configured in RevenueCat dashboard
 export const PRO_ENTITLEMENT = "pro";
@@ -23,8 +29,13 @@ let initialized = false;
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 
+function hasValidKeyFormat(key: string): boolean {
+  if (!key) return false;
+  return VALID_KEY_PREFIXES.some((p) => key.startsWith(p));
+}
+
 export function isPurchasesConfigured(): boolean {
-  return Boolean(REVENUECAT_KEY);
+  return hasValidKeyFormat(REVENUECAT_KEY);
 }
 
 export async function initPurchases(userId?: string | null): Promise<void> {
@@ -32,8 +43,18 @@ export async function initPurchases(userId?: string | null): Promise<void> {
     if (userId) await loginUser(userId);
     return;
   }
-  if (!isPurchasesConfigured()) {
-    // No RC key yet — stay in stub mode. All entitlement checks return false.
+  if (!REVENUECAT_KEY) {
+    // No key set — stay in stub mode silently.
+    return;
+  }
+  if (!hasValidKeyFormat(REVENUECAT_KEY)) {
+    // Key is set but doesn't look like a mobile SDK key. The native module
+    // would crash the app on startup if we passed it through. Skip and warn.
+    console.warn(
+      "[purchases] EXPO_PUBLIC_REVENUECAT_KEY does not match a known SDK key prefix " +
+        VALID_KEY_PREFIXES.join("/") +
+        ". Staying in stub mode. (got: " + REVENUECAT_KEY.slice(0, 5) + "...)",
+    );
     return;
   }
   try {
