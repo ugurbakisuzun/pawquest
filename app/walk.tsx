@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { Polyline, Marker } from "react-native-maps";
+import { MapView, Marker, Polyline } from "../components/MapViewSafe";
 import { Colors, Palette, Radius } from "../constants/theme";
 import { computeLevel, useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
@@ -81,7 +81,7 @@ export default function WalkScreen() {
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAt = useRef<Date | null>(null);
-  const mapRef = useRef<MapView | null>(null);
+  const mapRef = useRef<any>(null);
   const distRef = useRef(0); // avoid stale closure
 
   useEffect(() => {

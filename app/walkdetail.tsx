@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { Marker, Polyline } from "react-native-maps";
+import { MapView, Marker, Polyline } from "../components/MapViewSafe";
 import { Colors, Palette, Radius } from "../constants/theme";
 import { supabase } from "../lib/supabase";
 
