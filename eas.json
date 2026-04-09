@@ -19,7 +19,14 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://spnlnakubbdlssxliwfp.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_bvUjdgr4t6Lu95bGdQOZaw_dQZy2AcJ"
+      }
     }
   },
   "submit": {

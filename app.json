@@ -19,8 +19,12 @@
     },
     "android": {
       "package": "com.ugurbakisuzun.pawlo",
-      "versionCode": 1,
-      "permissions": ["RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#0F0B2E",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -53,6 +57,13 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "Pawlo tracks your location during dog walks to measure distance and award XP."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#FAC775",
+          "defaultChannel": "training"
         }
       ]
     ],

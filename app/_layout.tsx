@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Palette } from "../constants/theme";
 import { scheduleDailyReminder } from "../lib/notifications";
 import { initPurchases, loginUser, logoutUser } from "../lib/purchases";
@@ -35,29 +36,31 @@ export default function RootLayout() {
   if (!ready) return null;
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: Palette.questNight },
-        animation: "slide_from_right",
-      }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="signup" />
-      <Stack.Screen name="setup" />
-      <Stack.Screen name="dashboard" />
-      <Stack.Screen name="session" />
-      <Stack.Screen name="levelup" />
-      <Stack.Screen name="advisor" />
-      <Stack.Screen name="tricks" />
-      <Stack.Screen name="calendar" />
-      <Stack.Screen name="badges" />
-      <Stack.Screen name="leaderboard" />
-      <Stack.Screen name="walk" />
-      <Stack.Screen name="walkdetail" />
-      <Stack.Screen name="health" />
-      <Stack.Screen name="profile" />
-      <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
-    </Stack>
+    <ErrorBoundary>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: Palette.questNight },
+          animation: "slide_from_right",
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="signup" />
+        <Stack.Screen name="setup" />
+        <Stack.Screen name="dashboard" />
+        <Stack.Screen name="session" />
+        <Stack.Screen name="levelup" />
+        <Stack.Screen name="advisor" />
+        <Stack.Screen name="tricks" />
+        <Stack.Screen name="calendar" />
+        <Stack.Screen name="badges" />
+        <Stack.Screen name="leaderboard" />
+        <Stack.Screen name="walk" />
+        <Stack.Screen name="walkdetail" />
+        <Stack.Screen name="health" />
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
+      </Stack>
+    </ErrorBoundary>
   );
 }
