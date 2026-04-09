@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Platform,
   ScrollView,
   StatusBar,
@@ -12,6 +13,9 @@ import {
   View,
 } from "react-native";
 import { Colors, Palette, Radius, Spacing } from "../constants/theme";
+
+const TERMS_URL = "https://pawlo.so/terms";
+const PRIVACY_URL = "https://pawlo.so/privacy";
 import {
   fetchOffering,
   isPurchasesConfigured,
@@ -161,7 +165,11 @@ export default function PaywallScreen() {
         </TouchableOpacity>
 
         <Text style={styles.fineprint}>
-          Cancel anytime in your App Store settings. Subscription auto-renews monthly until cancelled.
+          Pawlo Pro is a £4.99/month auto-renewing subscription. Payment is
+          charged to your Google Play (or App Store) account at confirmation
+          and renews monthly unless cancelled at least 24 hours before the end
+          of the current period. Manage or cancel anytime in your device's
+          subscription settings.
         </Text>
 
         <TouchableOpacity onPress={handleRestore} style={styles.restoreBtn} disabled={restoring}>
@@ -169,6 +177,19 @@ export default function PaywallScreen() {
             {restoring ? "Restoring..." : "Restore purchases"}
           </Text>
         </TouchableOpacity>
+
+        <View style={styles.legalRow}>
+          <Text style={styles.legalLink} onPress={() => Linking.openURL(TERMS_URL)}>
+            Terms of Service
+          </Text>
+          <Text style={styles.legalDot}>·</Text>
+          <Text
+            style={styles.legalLink}
+            onPress={() => Linking.openURL(PRIVACY_URL)}
+          >
+            Privacy Policy
+          </Text>
+        </View>
 
         {__DEV__ && (
           <View style={styles.devCard}>
@@ -315,6 +336,20 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   restoreText: { color: C.textSecondary, fontSize: 13, textDecorationLine: "underline" },
+
+  legalRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 14,
+    gap: 8,
+  },
+  legalLink: {
+    color: C.textMuted,
+    fontSize: 11,
+    textDecorationLine: "underline",
+  },
+  legalDot: { color: C.textMuted, fontSize: 11 },
 
   // Dev panel
   devCard: {

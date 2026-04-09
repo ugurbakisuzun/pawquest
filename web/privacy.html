@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Pawlo</title>
+  <meta name="description" content="How Pawlo collects, uses, and protects your data. We keep it minimal — just what's needed to teach your dog." />
+
+  <meta property="og:title" content="Privacy Policy — Pawlo" />
+  <meta property="og:description" content="How Pawlo handles your data, written in plain English." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://pawlo.so/privacy" />
+  <meta name="theme-color" content="#0F0B2E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --night: #0F0B2E;
+      --night-2: #1A1742;
+      --gold: #FAC775;
+      --purple: #7F77DD;
+      --green: #1D9E75;
+      --text: #FFFFFF;
+      --text-2: rgba(255, 255, 255, 0.78);
+      --text-3: rgba(255, 255, 255, 0.55);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--night);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(250,199,117,0.3); }
+    a:hover { border-bottom-color: var(--gold); }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(127,119,221,0.14), transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(250,199,117,0.08), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(15, 11, 46, 0.7);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      border-bottom: none;
+    }
+    .logo-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .nav-back {
+      color: var(--text-3);
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: none;
+    }
+    .nav-back:hover { color: var(--text); }
+
+    .doc {
+      padding: 80px 0 120px;
+    }
+
+    .doc-eyebrow {
+      display: inline-block;
+      background: rgba(250,199,117,0.12);
+      border: 1px solid rgba(250,199,117,0.25);
+      color: var(--gold);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      font-size: clamp(38px, 5vw, 54px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+    }
+
+    .doc-intro {
+      font-size: 18px;
+      color: var(--text-2);
+      max-width: 620px;
+      margin-bottom: 16px;
+    }
+
+    .doc-meta {
+      font-size: 13px;
+      color: var(--text-3);
+      margin-bottom: 56px;
+    }
+
+    .toc {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px 28px;
+      margin-bottom: 56px;
+    }
+    .toc h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 14px;
+    }
+    .toc ol {
+      list-style: decimal inside;
+      color: var(--text-2);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+    .toc a { color: var(--text-2); border-bottom: none; }
+    .toc a:hover { color: var(--gold); }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-top: 56px;
+      margin-bottom: 14px;
+      color: var(--text);
+      scroll-margin-top: 100px;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-top: 28px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    p, li {
+      font-size: 16px;
+      color: var(--text-2);
+      margin-bottom: 14px;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 10px;
+    }
+    ul li::before {
+      content: '🐾';
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 12px;
+    }
+
+    .data-table {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px 0;
+      margin: 18px 0;
+      overflow: hidden;
+    }
+    .data-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 18px;
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+    }
+    .data-row:last-child { border-bottom: none; }
+    .data-key {
+      color: var(--gold);
+      font-weight: 600;
+    }
+    .data-val { color: var(--text-2); }
+
+    @media (max-width: 600px) {
+      .data-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+    }
+
+    .callout {
+      background: rgba(127,119,221,0.1);
+      border: 1px solid rgba(127,119,221,0.3);
+      border-radius: 14px;
+      padding: 18px 22px;
+      margin: 24px 0;
+      font-size: 15px;
+      color: var(--text-2);
+    }
+    .callout strong { color: var(--text); }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 13px;
+    }
+    footer a { color: var(--text-3); border-bottom: none; }
+    footer a:hover { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">🐾</span>
+        Pawlo
+      </a>
+      <a href="/" class="nav-back">← Back to home</a>
+    </div>
+  </nav>
+
+  <main class="doc">
+    <div class="container">
+
+      <span class="doc-eyebrow">Legal</span>
+      <h1>Privacy Policy</h1>
+      <p class="doc-intro">
+        Pawlo is a small, independent app built by one person with one goal:
+        helping you teach your dog. We collect only what we need to run the app
+        and never sell your data. This page explains exactly what that means.
+      </p>
+      <p class="doc-meta">Last updated: 9 April 2026</p>
+
+      <div class="toc">
+        <h3>On this page</h3>
+        <ol>
+          <li><a href="#who">Who we are</a></li>
+          <li><a href="#what">What we collect</a></li>
+          <li><a href="#why">Why we collect it</a></li>
+          <li><a href="#sharing">Who we share it with</a></li>
+          <li><a href="#international">International transfers</a></li>
+          <li><a href="#retention">How long we keep it</a></li>
+          <li><a href="#rights">Your rights</a></li>
+          <li><a href="#children">Children</a></li>
+          <li><a href="#security">Security</a></li>
+          <li><a href="#changes">Changes to this policy</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ol>
+      </div>
+
+      <h2 id="who">1. Who we are</h2>
+      <p>
+        Pawlo is operated by <strong>Ugur Bakisuzun</strong>, an independent
+        developer based in the United Kingdom. For the purposes of UK GDPR and
+        EU GDPR, we are the data controller of the personal information you
+        provide through the Pawlo mobile app and the
+        <a href="https://pawlo.so">pawlo.so</a> website.
+      </p>
+      <p>
+        You can reach us at any time at
+        <a href="mailto:hello@pawlo.so">hello@pawlo.so</a>.
+      </p>
+
+      <h2 id="what">2. What we collect</h2>
+      <p>We try to collect as little as possible. Here's the full list:</p>
+
+      <div class="data-table">
+        <div class="data-row">
+          <div class="data-key">Account</div>
+          <div class="data-val">Email address and password (password is hashed and never visible to us).</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Dog profile</div>
+          <div class="data-val">Your dog's name, breed, age, sex, and (optionally) weight, vaccinations, and medications you choose to log.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Training data</div>
+          <div class="data-val">Completed sessions, XP, streaks, badges, mission completions, tricks practiced, and which programs you've enrolled in.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">AI advisor chats</div>
+          <div class="data-val">Messages you send to Pawlo (the AI character) and the responses it returns. These are sent to Anthropic via our secure backend so the model can answer.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Walk tracking</div>
+          <div class="data-val">GPS coordinates recorded only while you actively start a walk session. Walks are saved with their distance, duration, and route. Location is never collected in the background.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Microphone</div>
+          <div class="data-val">When you tap the voice button to talk to Pawlo, your speech is converted to text on-device (or via Apple/Google speech recognition). We do not record or store audio.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Push notifications</div>
+          <div class="data-val">A device push token, used only to send you the daily training reminder you opted into. You can revoke this in your device settings at any time.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Purchases</div>
+          <div class="data-val">If you subscribe to Pawlo Pro, our payment partner RevenueCat receives an anonymous app user ID and the subscription state. Your card details are handled entirely by Google Play (or Apple) — we never see them.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Device basics</div>
+          <div class="data-val">App version, operating system, and locale, so we can debug issues and translate the app correctly.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Waitlist (website only)</div>
+          <div class="data-val">If you sign up to the waitlist on pawlo.so we store your email, the page you came from, and your user agent so we can email you when Pawlo launches in your region.</div>
+        </div>
+      </div>
+
+      <h2 id="why">3. Why we collect it</h2>
+      <p>Each piece of data has a single, narrow purpose:</p>
+      <ul>
+        <li>Provide and personalise the training experience for your specific dog.</li>
+        <li>Track progress, XP, streaks, and unlock badges so you stay motivated.</li>
+        <li>Send the daily reminder you opted into, and only that reminder.</li>
+        <li>Let you talk to Pawlo, our AI character, for tailored guidance.</li>
+        <li>Process your subscription and unlock paid features if you choose to upgrade.</li>
+        <li>Diagnose crashes and improve the app over time.</li>
+      </ul>
+      <p>
+        We do <strong>not</strong> use your data for advertising, do not sell
+        it to anyone, and do not share it with data brokers. We do not run
+        third-party analytics, ad SDKs, or social tracking pixels in the app.
+      </p>
+
+      <h2 id="sharing">4. Who we share it with</h2>
+      <p>
+        Pawlo runs on top of a small set of trusted infrastructure providers.
+        Each acts as a data processor on our behalf and only sees the data
+        that's strictly needed for their job.
+      </p>
+      <div class="data-table">
+        <div class="data-row">
+          <div class="data-key">Supabase</div>
+          <div class="data-val">Hosts our database, authentication, and serverless functions. Stores account, dog, training, walk, and health data with row-level security.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Anthropic</div>
+          <div class="data-val">Receives only the messages you send to the Pawlo AI advisor, via our secure relay. Anthropic does not use your messages to train its models (per its commercial terms).</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">RevenueCat</div>
+          <div class="data-val">Receives an anonymous app user ID and your subscription status. No personally identifiable purchase data.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Google Play / Apple App Store</div>
+          <div class="data-val">Process your subscription payment under their own terms. We never see your payment details.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Expo / EAS</div>
+          <div class="data-val">Builds and distributes the app, and (optionally, when you opt in) handles push notification delivery. No personal content is sent.</div>
+        </div>
+        <div class="data-row">
+          <div class="data-key">Cloudflare</div>
+          <div class="data-val">Hosts the pawlo.so website. Standard request logs (IP, user agent) are kept transiently for security and abuse prevention.</div>
+        </div>
+      </div>
+
+      <h2 id="international">5. International transfers</h2>
+      <p>
+        Some of our processors (Anthropic, RevenueCat, parts of Supabase) are
+        located in the United States. Where data leaves the UK or EEA, we rely
+        on the UK International Data Transfer Addendum and EU Standard
+        Contractual Clauses to ensure your data is protected to the same
+        standard as it is at home.
+      </p>
+
+      <h2 id="retention">6. How long we keep it</h2>
+      <p>
+        We keep your data for as long as your account is active. When you
+        delete your account from the in-app Profile screen, all of the
+        following are wiped immediately and irreversibly:
+      </p>
+      <ul>
+        <li>Your authentication record (email and hashed password)</li>
+        <li>Your dog profile, training history, walks, and health logs</li>
+        <li>Your AI advisor chats stored on our servers</li>
+        <li>Your push notification token</li>
+      </ul>
+      <p>
+        Anonymised, aggregated metrics (e.g. "how many sessions were completed
+        this week") may be retained for product analytics, but cannot be
+        traced back to you.
+      </p>
+
+      <h2 id="rights">7. Your rights</h2>
+      <p>
+        Under UK and EU GDPR, you have the right to:
+      </p>
+      <ul>
+        <li><strong>Access</strong> the personal data we hold about you.</li>
+        <li><strong>Rectify</strong> inaccurate data — most fields can be edited directly in the app.</li>
+        <li><strong>Erase</strong> your data — use the "Delete account" button on the Profile screen, or email us.</li>
+        <li><strong>Port</strong> your data to another service.</li>
+        <li><strong>Object</strong> to or <strong>restrict</strong> certain types of processing.</li>
+        <li><strong>Withdraw consent</strong> at any time, where processing is based on consent (e.g. push notifications).</li>
+        <li><strong>Lodge a complaint</strong> with the UK Information Commissioner's Office (<a href="https://ico.org.uk">ico.org.uk</a>) or your local data protection authority.</li>
+      </ul>
+
+      <h2 id="children">8. Children</h2>
+      <p>
+        Pawlo is intended for users aged 13 and over. We do not knowingly
+        collect personal data from children under 13. If you believe a child
+        has provided us with personal data, please contact us and we will
+        delete it.
+      </p>
+
+      <h2 id="security">9. Security</h2>
+      <p>
+        All data is encrypted in transit using TLS, and at rest using the
+        encryption mechanisms provided by our infrastructure partners.
+        Database access is restricted by row-level security policies so your
+        records can only be read by you. The Anthropic API key never ships
+        with the app — it lives only on our backend.
+      </p>
+      <div class="callout">
+        <strong>No system is perfectly secure.</strong> If you ever notice
+        suspicious activity on your account, email us immediately at
+        <a href="mailto:hello@pawlo.so">hello@pawlo.so</a> and we'll
+        investigate.
+      </div>
+
+      <h2 id="changes">10. Changes to this policy</h2>
+      <p>
+        If we make material changes, we'll update the "Last updated" date at
+        the top of this page and, for significant changes, notify you in the
+        app or by email before the change takes effect.
+      </p>
+
+      <h2 id="contact">11. Contact</h2>
+      <p>
+        Questions, concerns, or just want to say hi?
+      </p>
+      <p>
+        Email: <a href="mailto:hello@pawlo.so">hello@pawlo.so</a><br />
+        Web: <a href="https://pawlo.so">pawlo.so</a>
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Pawlo · <a href="/">Home</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@pawlo.so">Contact</a>
+    </div>
+  </footer>
+
+</body>
+</html>

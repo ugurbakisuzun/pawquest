@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import {
+    Linking,
     StatusBar,
     StyleSheet,
     Text,
@@ -7,6 +8,9 @@ import {
     View,
 } from "react-native";
 import { Colors, Palette, Radius, Spacing } from "../constants/theme";
+
+const TERMS_URL = "https://pawlo.so/terms";
+const PRIVACY_URL = "https://pawlo.so/privacy";
 
 const C = Colors.dark;
 
@@ -61,7 +65,17 @@ export default function OnboardingScreen() {
       </View>
 
       <Text style={styles.legal}>
-        By continuing you agree to our Terms & Privacy Policy
+        By continuing you agree to our{" "}
+        <Text style={styles.legalLink} onPress={() => Linking.openURL(TERMS_URL)}>
+          Terms
+        </Text>{" "}
+        &{" "}
+        <Text
+          style={styles.legalLink}
+          onPress={() => Linking.openURL(PRIVACY_URL)}
+        >
+          Privacy Policy
+        </Text>
       </Text>
     </View>
   );
@@ -138,4 +152,8 @@ const styles = StyleSheet.create({
   },
   btnGhostText: { color: C.textSecondary, fontSize: 14 },
   legal: { color: C.textMuted, fontSize: 11, textAlign: "center" },
+  legalLink: {
+    color: C.textSecondary,
+    textDecorationLine: "underline",
+  },
 });

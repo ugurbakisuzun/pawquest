@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — Pawlo</title>
+  <meta name="description" content="The terms that govern your use of the Pawlo app and website." />
+
+  <meta property="og:title" content="Terms of Service — Pawlo" />
+  <meta property="og:description" content="The terms that govern your use of Pawlo." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://pawlo.so/terms" />
+  <meta name="theme-color" content="#0F0B2E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --night: #0F0B2E;
+      --night-2: #1A1742;
+      --gold: #FAC775;
+      --purple: #7F77DD;
+      --green: #1D9E75;
+      --text: #FFFFFF;
+      --text-2: rgba(255, 255, 255, 0.78);
+      --text-3: rgba(255, 255, 255, 0.55);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--night);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(250,199,117,0.3); }
+    a:hover { border-bottom-color: var(--gold); }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(127,119,221,0.14), transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(250,199,117,0.08), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(15, 11, 46, 0.7);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--text);
+      border-bottom: none;
+    }
+    .logo-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .nav-back {
+      color: var(--text-3);
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: none;
+    }
+    .nav-back:hover { color: var(--text); }
+
+    .doc { padding: 80px 0 120px; }
+
+    .doc-eyebrow {
+      display: inline-block;
+      background: rgba(250,199,117,0.12);
+      border: 1px solid rgba(250,199,117,0.25);
+      color: var(--gold);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      font-size: clamp(38px, 5vw, 54px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+    }
+
+    .doc-intro {
+      font-size: 18px;
+      color: var(--text-2);
+      max-width: 620px;
+      margin-bottom: 16px;
+    }
+
+    .doc-meta {
+      font-size: 13px;
+      color: var(--text-3);
+      margin-bottom: 56px;
+    }
+
+    .toc {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px 28px;
+      margin-bottom: 56px;
+    }
+    .toc h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 14px;
+    }
+    .toc ol {
+      list-style: decimal inside;
+      color: var(--text-2);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+    .toc a { color: var(--text-2); border-bottom: none; }
+    .toc a:hover { color: var(--gold); }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-top: 56px;
+      margin-bottom: 14px;
+      color: var(--text);
+      scroll-margin-top: 100px;
+    }
+
+    p, li {
+      font-size: 16px;
+      color: var(--text-2);
+      margin-bottom: 14px;
+    }
+
+    ul { list-style: none; padding-left: 0; }
+    ul li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 10px;
+    }
+    ul li::before {
+      content: '🐾';
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 12px;
+    }
+
+    .callout {
+      background: rgba(127,119,221,0.1);
+      border: 1px solid rgba(127,119,221,0.3);
+      border-radius: 14px;
+      padding: 18px 22px;
+      margin: 24px 0;
+      font-size: 15px;
+      color: var(--text-2);
+    }
+    .callout strong { color: var(--text); }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 13px;
+    }
+    footer a { color: var(--text-3); border-bottom: none; }
+    footer a:hover { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">🐾</span>
+        Pawlo
+      </a>
+      <a href="/" class="nav-back">← Back to home</a>
+    </div>
+  </nav>
+
+  <main class="doc">
+    <div class="container">
+
+      <span class="doc-eyebrow">Legal</span>
+      <h1>Terms of Service</h1>
+      <p class="doc-intro">
+        These are the rules of the road for using Pawlo. They're written in
+        plain English and they're shorter than most. Please read them — by
+        creating an account or subscribing, you're agreeing to them.
+      </p>
+      <p class="doc-meta">Last updated: 9 April 2026</p>
+
+      <div class="toc">
+        <h3>On this page</h3>
+        <ol>
+          <li><a href="#agreement">The agreement</a></li>
+          <li><a href="#account">Your account</a></li>
+          <li><a href="#service">What Pawlo does (and doesn't)</a></li>
+          <li><a href="#subscription">Pawlo Pro subscription</a></li>
+          <li><a href="#cancel">Cancellation and refunds</a></li>
+          <li><a href="#conduct">Acceptable use</a></li>
+          <li><a href="#ip">Intellectual property</a></li>
+          <li><a href="#disclaimer">Disclaimer</a></li>
+          <li><a href="#liability">Limitation of liability</a></li>
+          <li><a href="#changes">Changes</a></li>
+          <li><a href="#law">Governing law</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ol>
+      </div>
+
+      <h2 id="agreement">1. The agreement</h2>
+      <p>
+        These Terms of Service form a binding agreement between you and
+        <strong>Ugur Bakisuzun</strong> (operating as "Pawlo"), an independent
+        developer based in the United Kingdom. By downloading, installing, or
+        using the Pawlo mobile app or visiting
+        <a href="https://pawlo.so">pawlo.so</a>, you agree to these terms.
+      </p>
+      <p>
+        If you don't agree, that's OK — please don't use the service.
+      </p>
+
+      <h2 id="account">2. Your account</h2>
+      <p>
+        To use most of Pawlo's features you'll need a free account. You agree
+        to provide accurate information and to keep your password secret. You
+        are responsible for any activity that happens under your account.
+      </p>
+      <p>
+        You can delete your account at any time from the in-app Profile
+        screen. Deletion is immediate and irreversible.
+      </p>
+
+      <h2 id="service">3. What Pawlo does (and doesn't)</h2>
+      <p>
+        Pawlo is a gamified dog training companion. It helps you and your dog
+        learn together with structured programs, AI-guided feedback, walks,
+        and gentle daily reminders.
+      </p>
+      <p>
+        Pawlo is <strong>not a substitute for a professional dog trainer or
+        veterinarian</strong>. The advice from the AI character "Pawlo" is
+        generated by a large language model and may occasionally be wrong,
+        incomplete, or unsuitable for your dog's specific situation. If your
+        dog shows signs of aggression, fear, illness, or persistent
+        behavioural issues, please consult a qualified trainer or vet.
+      </p>
+
+      <h2 id="subscription">4. Pawlo Pro subscription</h2>
+      <p>
+        Pawlo is free to use. An optional <strong>Pawlo Pro</strong>
+        subscription unlocks all training programs, all tricks, unlimited AI
+        chats, and other premium features. Pricing is shown in the app at the
+        time of purchase, in your local currency where supported.
+      </p>
+      <p>
+        Subscriptions are billed monthly through the Google Play Store or
+        Apple App Store at the price stated at sign-up. They auto-renew at
+        the end of each billing period unless cancelled at least 24 hours
+        before the end of the current period. Renewal will be charged to the
+        same payment method.
+      </p>
+
+      <h2 id="cancel">5. Cancellation and refunds</h2>
+      <p>
+        You can cancel your Pawlo Pro subscription at any time directly in
+        your device's subscription settings:
+      </p>
+      <ul>
+        <li><strong>Android:</strong> Google Play Store → Profile → Payments &amp; subscriptions → Subscriptions.</li>
+        <li><strong>iOS:</strong> Settings → Apple ID → Subscriptions.</li>
+      </ul>
+      <p>
+        Cancelling stops the next renewal — you keep Pro access until the end
+        of the current billing period. Refunds are handled by Google Play and
+        Apple under their respective refund policies; please contact them
+        directly for refund requests.
+      </p>
+
+      <h2 id="conduct">6. Acceptable use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Use Pawlo to harm an animal in any way.</li>
+        <li>Reverse-engineer, decompile, or attempt to extract the source code of the app.</li>
+        <li>Abuse, spam, or misuse the AI advisor or any backend service.</li>
+        <li>Use the service to violate any law or third-party right.</li>
+        <li>Resell, sublicense, or commercially exploit access to the service without our written permission.</li>
+      </ul>
+      <p>
+        We may suspend or terminate accounts that breach these rules.
+      </p>
+
+      <h2 id="ip">7. Intellectual property</h2>
+      <p>
+        Pawlo, the Pawlo mascot, the brand, the app code, the artwork, the
+        copy, and the training program content are all owned by us or our
+        licensors. You get a personal, non-exclusive, non-transferable licence
+        to use the app for its intended purpose. You retain ownership of any
+        information you put into Pawlo about your dog.
+      </p>
+
+      <h2 id="disclaimer">8. Disclaimer</h2>
+      <div class="callout">
+        Pawlo is provided <strong>"as is"</strong> and <strong>"as
+        available"</strong>, without warranties of any kind, express or
+        implied. We do not guarantee that the service will be uninterrupted,
+        error-free, or perfectly accurate. Training outcomes depend on you,
+        your dog, and many factors outside our control.
+      </div>
+
+      <h2 id="liability">9. Limitation of liability</h2>
+      <p>
+        To the maximum extent permitted by law, Pawlo and its operator will
+        not be liable for any indirect, incidental, special, consequential,
+        or punitive damages, or any loss of data, profits, or goodwill,
+        arising from your use of the service. Our total liability for any
+        claim related to the service will not exceed the amount you paid us
+        in the twelve months before the claim arose (or £20, whichever is
+        higher).
+      </p>
+      <p>
+        Nothing in these terms limits or excludes liability for death or
+        personal injury caused by negligence, fraud, or any other liability
+        that cannot be excluded under applicable law.
+      </p>
+
+      <h2 id="changes">10. Changes</h2>
+      <p>
+        We may update these terms from time to time. If we make material
+        changes we'll update the "Last updated" date and, for significant
+        changes, notify you in the app or by email before they take effect.
+        Continued use of the service after changes take effect means you
+        accept the new terms.
+      </p>
+
+      <h2 id="law">11. Governing law</h2>
+      <p>
+        These terms are governed by the laws of England and Wales. Any
+        dispute that cannot be resolved amicably will be subject to the
+        exclusive jurisdiction of the courts of England and Wales, except
+        that consumers may also bring proceedings in their local courts where
+        required by law.
+      </p>
+
+      <h2 id="contact">12. Contact</h2>
+      <p>
+        Questions about these terms?
+      </p>
+      <p>
+        Email: <a href="mailto:hello@pawlo.so">hello@pawlo.so</a><br />
+        Web: <a href="https://pawlo.so">pawlo.so</a>
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Pawlo · <a href="/">Home</a> · <a href="/privacy">Privacy</a> · <a href="mailto:hello@pawlo.so">Contact</a>
+    </div>
+  </footer>
+
+</body>
+</html>
