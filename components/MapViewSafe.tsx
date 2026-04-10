@@ -10,11 +10,11 @@ import { Colors, Radius } from "../constants/theme";
 const C = Colors.dark;
 
 // Android requires a Google Maps API key in app.json (android.config.googleMaps.apiKey).
-// Until that's set up, MapView crashes the app on mount. Render a placeholder instead.
-//
-// Flip ANDROID_MAPS_AVAILABLE to true once the API key is configured and the next
-// EAS build picks it up.
-const ANDROID_MAPS_AVAILABLE = false;
+// As of v1.0.1 (commit landing this change) the key is wired up and restricted to
+// com.ugurbakisuzun.pawlo + production keystore SHA-1, so the real MapView is safe to
+// render on Android. The placeholder branch below stays in place as a defensive fallback
+// for development clients (Expo Go) and unforeseen native init failures.
+const ANDROID_MAPS_AVAILABLE = true;
 const MAPS_AVAILABLE = Platform.OS === "ios" || (Platform.OS === "android" && ANDROID_MAPS_AVAILABLE);
 
 // Forward the ref so existing call sites like mapRef.current?.animateToRegion(...)
