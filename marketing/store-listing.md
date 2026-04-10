@@ -8,16 +8,24 @@
 ## App name (≤30 characters)
 
 ```
-Pawlo: Dog Training & Tricks
+Pawlo: Dog Training & Care
 ```
 
-(28 chars)
+(26 chars)
 
-**Alternates if the primary is taken or you want a tighter brand-first read:**
+**Why this name:** "Training" is the highest-intent search keyword on the
+Play Store; "Care" deliberately broadens the surface to cover walks, health,
+vaccinations, medications, and tricks (all of which the app does). Brand
+("Pawlo") is up front so the listing is recognisable in search results and
+ad creatives. Picked over "Dog Training & Tricks" because the latter
+under-sold the walks + health half of the app.
 
-- `Pawlo — Dog Training Coach` (26)
-- `Pawlo: Train Your Dog Daily` (27)
-- `Pawlo · Dog Training Games` (26)
+**Alternates kept on file for future iterations:**
+
+- `Pawlo: Train, Walk & Care` (25) — verb-led
+- `Pawlo: Dog Trainer & Walker` (27) — direct, action-led
+- `Pawlo — Your Dog's AI Coach` (27) — premium framing
+- `Pawlo: AI Dog Coach & Tracker` (30) — keyword-stuffed
 
 ---
 
