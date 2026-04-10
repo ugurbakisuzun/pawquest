@@ -1,0 +1,21 @@
+# Files that ship in git but are NOT needed for an EAS build.
+# Anything matching these patterns is excluded from the project archive
+# uploaded to EAS Build, which speeds up uploads + builds without
+# affecting the final AAB.
+#
+# Syntax is the same as .gitignore.
+
+# Marketing & Play Store reference material — pure docs, no code
+marketing/
+play_store/
+
+# Local screenshots / scratch
+ss/
+
+# Editor + OS noise
+.vscode/
+.idea/
+.DS_Store
+
+# Local logs from previous EAS runs
+/tmp/eas-build-*.log
