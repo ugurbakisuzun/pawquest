@@ -866,13 +866,65 @@
   </footer>
 
   <script>
-    // ───── Supabase REST waitlist signup ─────
+    // ───── Supabase REST waitlist signup + UTM capture ─────
     const SUPABASE_URL = "https://spnlnakubbdlssxliwfp.supabase.co";
     const SUPABASE_KEY = "sb_publishable_bvUjdgr4t6Lu95bGdQOZaw_dQZy2AcJ";
 
+    // Marketing attribution keys we pick up from the URL query string.
+    // These get persisted in sessionStorage so UTM params survive if the
+    // visitor navigates to /privacy, /terms, etc. before they sign up.
+    const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+    const META_STORAGE_KEY = "pawlo_signup_metadata";
+
+    function captureMarketingMetadata() {
+      let meta = {};
+      try {
+        meta = JSON.parse(sessionStorage.getItem(META_STORAGE_KEY) || "{}");
+      } catch {}
+
+      const params = new URLSearchParams(window.location.search);
+      let changed = false;
+
+      // Only write UTM params once per session — don't let a later visit
+      // without UTMs clobber the original attribution.
+      for (const key of UTM_KEYS) {
+        const val = params.get(key);
+        if (val && !meta[key]) {
+          meta[key] = val.slice(0, 200);
+          changed = true;
+        }
+      }
+
+      // First-visit timestamp (stable across returning visits in the session)
+      if (!meta.first_seen_at) {
+        meta.first_seen_at = new Date().toISOString();
+        changed = true;
+      }
+
+      // Landing page variant tag — bump this when we ship A/B changes
+      meta.landing_version = "v2";
+
+      // Browser timezone — useful for knowing where waitlist signups come from
+      // before we wire up geo IP (which we don't have on the client side).
+      if (!meta.timezone) {
+        try {
+          meta.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          changed = true;
+        } catch {}
+      }
+
+      if (changed) {
+        try { sessionStorage.setItem(META_STORAGE_KEY, JSON.stringify(meta)); } catch {}
+      }
+      return meta;
+    }
+
+    // Capture on first paint so UTMs aren't lost if the user clicks away.
+    captureMarketingMetadata();
+
     async function joinWaitlist(email, statusEl, btn) {
       statusEl.className = "form-status";
-      statusEl.textContent = "";
+      statusEl.innerHTML = "";
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         statusEl.className = "form-status error";
@@ -885,6 +937,11 @@
       btn.textContent = "Joining...";
 
       try {
+        const metadata = {
+          ...captureMarketingMetadata(),
+          signup_at_local: new Date().toISOString(),
+        };
+
         const res = await fetch(SUPABASE_URL + "/rest/v1/waitlist_signups", {
           method: "POST",
           headers: {
@@ -898,20 +955,12 @@
             source: "landing",
             user_agent: navigator.userAgent,
             referrer: document.referrer || null,
+            metadata,
           }),
         });
 
-        if (res.ok) {
-          statusEl.className = "form-status success";
-          statusEl.textContent = "🎉 You're in! Pawlo will be in touch.";
-          btn.textContent = "✓ Joined";
-          return;
-        }
-
-        if (res.status === 409) {
-          statusEl.className = "form-status success";
-          statusEl.textContent = "🐾 You're already on the list!";
-          btn.textContent = "✓ Joined";
+        if (res.ok || res.status === 409) {
+          showSuccessState(statusEl, btn, res.ok);
           return;
         }
 
@@ -931,6 +980,55 @@
         btn.disabled = false;
         btn.textContent = originalText;
       }
+    }
+
+    function showSuccessState(statusEl, btn, isNewSignup) {
+      statusEl.className = "form-status success";
+      const lead = isNewSignup
+        ? "🎉 You're in! We'll email you the moment Pawlo lands — so you can start the free 7-day potty training program right away."
+        : "🐾 You're already on the list! Pawlo will be in touch soon.";
+
+      statusEl.innerHTML =
+        '<div style="line-height:1.45;">' + lead + '</div>' +
+        '<div style="margin-top:10px;font-size:13px;color:rgba(255,255,255,0.55);">' +
+          'Know a dog owner who\u2019d love this? ' +
+          '<a href="#" id="pawlo-share-link" style="color:var(--gold);text-decoration:underline;">Share Pawlo \u2192</a>' +
+        '</div>';
+
+      const shareLink = statusEl.querySelector("#pawlo-share-link");
+      if (shareLink) shareLink.addEventListener("click", sharePawlo);
+
+      btn.textContent = "\u2713 Joined";
+    }
+
+    async function sharePawlo(event) {
+      if (event) event.preventDefault();
+      const shareData = {
+        title: "Pawlo — Your dog's personal teacher",
+        text: "I just joined the Pawlo waitlist. 5-minute daily dog training, like Duolingo but for dogs. Thought you'd love it 🐾",
+        url: "https://pawlo.so",
+      };
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch {
+          // user cancelled or share rejected — fall through to clipboard
+        }
+      }
+      try {
+        await navigator.clipboard.writeText("https://pawlo.so");
+        const tip = document.createElement("div");
+        tip.textContent = "✓ Copied pawlo.so to clipboard";
+        tip.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(15,11,46,0.95);color:#FAC775;border:1px solid rgba(250,199,117,0.4);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.4);";
+        document.body.appendChild(tip);
+        setTimeout(() => tip.remove(), 2500);
+        return;
+      } catch {}
+      // Final fallback: mailto
+      window.location.href =
+        "mailto:?subject=" + encodeURIComponent("Check out Pawlo") +
+        "&body=" + encodeURIComponent(shareData.text + "\n\n" + shareData.url);
     }
 
     function wireForm(formId, statusId) {
