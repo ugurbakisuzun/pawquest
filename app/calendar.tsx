@@ -15,7 +15,7 @@ import { supabase } from "../lib/supabase";
 
 const C = Colors.light;
 
-type EventType = "program" | "trick" | "walk" | "medication" | "vaccination";
+type EventType = "program" | "trick" | "walk" | "medication" | "vaccination" | "grooming" | "vet";
 
 interface CalendarEvent {
   type: EventType;
@@ -40,6 +40,8 @@ const TYPE_META: Record<EventType, { emoji: string; color: string; label: string
   walk:        { emoji: "🚶", color: "#FAC775", label: "Walk" },
   medication:  { emoji: "💊", color: "#E76F51", label: "Medication" },
   vaccination: { emoji: "💉", color: "#5BC0EB", label: "Vaccination" },
+  grooming:    { emoji: "✂️", color: "#9B59B6", label: "Grooming" },
+  vet:         { emoji: "🏥", color: "#D85A30", label: "Vet" },
 };
 
 function toLocalDateStr(date: Date): string {
@@ -117,6 +119,8 @@ export default function CalendarScreen() {
         { data: walks },
         { data: vaxes },
         { data: meds },
+        { data: grooms },
+        { data: vets },
         { data: progs },
       ] = await Promise.all([
         supabase
@@ -144,6 +148,16 @@ export default function CalendarScreen() {
           .select("name, dosage, start_date")
           .eq("dog_id", dog.id)
           .order("start_date", { ascending: true }),
+        supabase
+          .from("grooming_logs")
+          .select("grooming_type, date_done, note")
+          .eq("dog_id", dog.id)
+          .order("date_done", { ascending: true }),
+        supabase
+          .from("vet_checks")
+          .select("reason, date_done, vet_name")
+          .eq("dog_id", dog.id)
+          .order("date_done", { ascending: true }),
         supabase
           .from("training_programs")
           .select("slug, title"),
@@ -190,12 +204,28 @@ export default function CalendarScreen() {
         completed_at: new Date(m.start_date).toISOString(),
       }));
 
+      const groomEvents: CalendarEvent[] = (grooms ?? []).map((g: any) => ({
+        type: "grooming" as EventType,
+        label: g.grooming_type,
+        detail: g.note ?? "Grooming",
+        completed_at: new Date(g.date_done).toISOString(),
+      }));
+
+      const vetEvents: CalendarEvent[] = (vets ?? []).map((v: any) => ({
+        type: "vet" as EventType,
+        label: v.reason,
+        detail: v.vet_name ?? "Vet visit",
+        completed_at: new Date(v.date_done).toISOString(),
+      }));
+
       const combined = [
         ...programEvents,
         ...trickEvents,
         ...walkEvents,
         ...vaxEvents,
         ...medEvents,
+        ...groomEvents,
+        ...vetEvents,
       ].sort(
         (a, b) =>
           new Date(a.completed_at).getTime() -
@@ -212,7 +242,7 @@ export default function CalendarScreen() {
 
   // Stats
   const counts: Record<EventType, number> = {
-    program: 0, trick: 0, walk: 0, medication: 0, vaccination: 0,
+    program: 0, trick: 0, walk: 0, medication: 0, vaccination: 0, grooming: 0, vet: 0,
   };
   allEvents.forEach((e) => { counts[e.type]++; });
 
@@ -480,6 +510,22 @@ export default function CalendarScreen() {
           >
             <Text style={styles.trackingLinkIcon}>💊</Text>
             <Text style={styles.trackingLinkText}>Medications</Text>
+            <Text style={styles.trackingLinkArrow}>→</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.trackingLink}
+            onPress={() => router.push("/health?tab=grooming" as any)}
+          >
+            <Text style={styles.trackingLinkIcon}>✂️</Text>
+            <Text style={styles.trackingLinkText}>Grooming</Text>
+            <Text style={styles.trackingLinkArrow}>→</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.trackingLink}
+            onPress={() => router.push("/health?tab=vet" as any)}
+          >
+            <Text style={styles.trackingLinkIcon}>🏥</Text>
+            <Text style={styles.trackingLinkText}>Vet Checks</Text>
             <Text style={styles.trackingLinkArrow}>→</Text>
           </TouchableOpacity>
         </View>
