@@ -67,6 +67,11 @@ export default function DashboardScreen() {
   useEffect(() => {
     if (!dog) loadDog();
     else {
+      // Redirect to routine setup if not yet completed
+      if (!dog.routine_setup_complete) {
+        router.replace("/routine-setup" as any);
+        return;
+      }
       loadCompletedTricks(dog.id);
       loadBadges(dog.id);
       loadDailyMissions(dog.id);

@@ -2,7 +2,8 @@ import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Palette } from "../constants/theme";
-import { scheduleDailyReminder } from "../lib/notifications";
+import { ensureNotificationChannels, scheduleDailyReminder } from "../lib/notifications";
+import { syncAllReminders } from "../lib/reminders";
 import { initPurchases, loginUser, logoutUser } from "../lib/purchases";
 import { useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
@@ -27,7 +28,11 @@ export default function RootLayout() {
           .eq("owner_id", uid)
           .limit(1)
           .single();
-        if (dogData) setDog(dogData);
+        if (dogData) {
+          setDog(dogData);
+          // Sync reminders on startup (re-register after reinstall/restart)
+          syncAllReminders(dogData.id, dogData.name).catch(() => {});
+        }
 
         await initPurchases(uid);
         await loadProStatus();
@@ -50,6 +55,7 @@ export default function RootLayout() {
       },
     );
 
+    ensureNotificationChannels();
     scheduleDailyReminder(19, 0);
 
     return () => subscription.unsubscribe();
@@ -81,6 +87,7 @@ export default function RootLayout() {
         <Stack.Screen name="walkdetail" />
         <Stack.Screen name="health" />
         <Stack.Screen name="profile" />
+        <Stack.Screen name="routine-setup" options={{ presentation: "modal", gestureEnabled: false }} />
         <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
       </Stack>
     </ErrorBoundary>

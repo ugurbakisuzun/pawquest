@@ -24,6 +24,7 @@ export interface Dog {
   lifestyle?: string[];
   has_coparent?: boolean;
   active_program_slugs?: string[];
+  routine_setup_complete?: boolean;
 }
 
 export interface Badge {
