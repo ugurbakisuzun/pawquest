@@ -1,3 +1,4 @@
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import {
@@ -14,13 +15,8 @@ import { Colors, Palette, Radius, Spacing } from "../constants/theme";
 import { scheduleRoutineReminders } from "../lib/reminders";
 import { useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
-import { WheelPicker } from "./setup";
 
 const C = Colors.light;
-const TOTAL_STEPS = 4;
-
-const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-const MINUTES = ["00", "15", "30", "45"];
 
 const FOOD_TYPES = [
   { id: "dry", label: "Dry Food", emoji: "🥣" },
@@ -35,6 +31,10 @@ const WALK_TYPES = [
   { id: "mixed", label: "Mixed", emoji: "🔀" },
 ];
 
+function formatTime(h: number, m: number): string {
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 export default function RoutineSetupScreen() {
   const { dog, setDog } = useStore();
   const [step, setStep] = useState(1);
@@ -44,14 +44,25 @@ export default function RoutineSetupScreen() {
   // Feeding state
   const [mealsPerDay, setMealsPerDay] = useState(2);
   const [foodType, setFoodType] = useState("dry");
-  const [mealHours, setMealHours] = useState([8, 18, 12, 7]); // defaults
-  const [mealMinutes, setMealMinutes] = useState([0, 0, 0, 0]);
+  const [mealTimes, setMealTimes] = useState([
+    new Date(2026, 0, 1, 8, 0),
+    new Date(2026, 0, 1, 18, 0),
+    new Date(2026, 0, 1, 12, 0),
+    new Date(2026, 0, 1, 7, 0),
+  ]);
 
   // Walking state
   const [walksPerDay, setWalksPerDay] = useState(2);
   const [walkType, setWalkType] = useState("mixed");
-  const [walkHours, setWalkHours] = useState([9, 17, 13, 20]);
-  const [walkMinutes, setWalkMinutes] = useState([0, 0, 0, 0]);
+  const [walkTimes, setWalkTimes] = useState([
+    new Date(2026, 0, 1, 9, 0),
+    new Date(2026, 0, 1, 17, 0),
+    new Date(2026, 0, 1, 13, 0),
+    new Date(2026, 0, 1, 20, 0),
+  ]);
+
+  // Time picker visibility
+  const [activeTimePicker, setActiveTimePicker] = useState<string | null>(null);
 
   const dogName = dog?.name ?? "your dog";
 
@@ -65,10 +76,22 @@ export default function RoutineSetupScreen() {
   const goNext = () => animateTransition(step + 1);
   const goBack = () => { if (step > 1) animateTransition(step - 1); };
 
+  const handleTimeChange = (key: string, _: any, selectedDate?: Date) => {
+    setActiveTimePicker(null);
+    if (!selectedDate) return;
+    const [type, indexStr] = key.split("-");
+    const index = Number(indexStr);
+    if (type === "meal") {
+      setMealTimes((prev) => { const n = [...prev]; n[index] = selectedDate; return n; });
+    } else {
+      setWalkTimes((prev) => { const n = [...prev]; n[index] = selectedDate; return n; });
+    }
+  };
+
   const saveFeedingRoutine = async () => {
     if (!dog) return;
     const times = Array.from({ length: mealsPerDay }, (_, i) =>
-      `${HOURS[mealHours[i]]}:${MINUTES[mealMinutes[i]]}`,
+      formatTime(mealTimes[i].getHours(), mealTimes[i].getMinutes()),
     );
 
     await supabase.from("feeding_routines").upsert({
@@ -86,7 +109,7 @@ export default function RoutineSetupScreen() {
     if (!dog) return;
     setSaving(true);
     const times = Array.from({ length: walksPerDay }, (_, i) =>
-      `${HOURS[walkHours[i]]}:${MINUTES[walkMinutes[i]]}`,
+      formatTime(walkTimes[i].getHours(), walkTimes[i].getMinutes()),
     );
 
     await supabase.from("walking_routines").upsert({
@@ -98,7 +121,6 @@ export default function RoutineSetupScreen() {
 
     await scheduleRoutineReminders(dog.id, dog.name, "walking", times);
 
-    // Mark routine setup complete
     const { data } = await supabase
       .from("dogs")
       .update({ routine_setup_complete: true })
@@ -123,23 +145,7 @@ export default function RoutineSetupScreen() {
     router.replace("/dashboard" as any);
   };
 
-  const setMealHour = (index: number, val: number) => {
-    setMealHours((prev) => { const n = [...prev]; n[index] = val; return n; });
-  };
-  const setMealMinute = (index: number, val: number) => {
-    setMealMinutes((prev) => { const n = [...prev]; n[index] = val; return n; });
-  };
-  const setWalkHour = (index: number, val: number) => {
-    setWalkHours((prev) => { const n = [...prev]; n[index] = val; return n; });
-  };
-  const setWalkMinute = (index: number, val: number) => {
-    setWalkMinutes((prev) => { const n = [...prev]; n[index] = val; return n; });
-  };
-
-  const ordinal = (i: number) => {
-    const labels = ["1st", "2nd", "3rd", "4th"];
-    return labels[i] ?? `${i + 1}th`;
-  };
+  const ordinal = (i: number) => ["1st", "2nd", "3rd", "4th"][i] ?? `${i + 1}th`;
 
   return (
     <View style={styles.container}>
@@ -163,11 +169,7 @@ export default function RoutineSetupScreen() {
         {[1, 2, 3, 4].map((s) => (
           <View
             key={s}
-            style={[
-              styles.dot,
-              s < step && styles.dotDone,
-              s === step && styles.dotActive,
-            ]}
+            style={[styles.dot, s < step && styles.dotDone, s === step && styles.dotActive]}
           />
         ))}
       </View>
@@ -189,9 +191,7 @@ export default function RoutineSetupScreen() {
                     style={[styles.countBtn, mealsPerDay === n && styles.countBtnActive]}
                     onPress={() => setMealsPerDay(n)}
                   >
-                    <Text style={[styles.countText, mealsPerDay === n && styles.countTextActive]}>
-                      {n}
-                    </Text>
+                    <Text style={[styles.countText, mealsPerDay === n && styles.countTextActive]}>{n}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -205,9 +205,7 @@ export default function RoutineSetupScreen() {
                     onPress={() => setFoodType(t.id)}
                   >
                     <Text style={styles.typeEmoji}>{t.emoji}</Text>
-                    <Text style={[styles.typeLabel, foodType === t.id && styles.typeLabelActive]}>
-                      {t.label}
-                    </Text>
+                    <Text style={[styles.typeLabel, foodType === t.id && styles.typeLabelActive]}>{t.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -225,26 +223,31 @@ export default function RoutineSetupScreen() {
               <Text style={styles.title}>Feeding Times</Text>
               <Text style={styles.subtitle}>When do you feed {dogName}?</Text>
 
-              {Array.from({ length: mealsPerDay }, (_, i) => (
-                <View key={i} style={styles.timeRow}>
-                  <Text style={styles.timeLabel}>{ordinal(i)} Meal</Text>
-                  <View style={styles.timePickers}>
-                    <WheelPicker
-                      data={HOURS}
-                      selectedIndex={mealHours[i]}
-                      onSelect={(v) => setMealHour(i, v)}
-                      width={60}
-                    />
-                    <Text style={styles.timeColon}>:</Text>
-                    <WheelPicker
-                      data={MINUTES}
-                      selectedIndex={mealMinutes[i]}
-                      onSelect={(v) => setMealMinute(i, v)}
-                      width={60}
-                    />
+              {Array.from({ length: mealsPerDay }, (_, i) => {
+                const key = `meal-${i}`;
+                return (
+                  <View key={i}>
+                    <TouchableOpacity
+                      style={styles.timeCard}
+                      onPress={() => setActiveTimePicker(activeTimePicker === key ? null : key)}
+                    >
+                      <Text style={styles.timeCardLabel}>{ordinal(i)} Meal</Text>
+                      <Text style={styles.timeCardValue}>
+                        {formatTime(mealTimes[i].getHours(), mealTimes[i].getMinutes())}
+                      </Text>
+                    </TouchableOpacity>
+                    {activeTimePicker === key && (
+                      <DateTimePicker
+                        value={mealTimes[i]}
+                        mode="time"
+                        display="spinner"
+                        minuteInterval={5}
+                        onChange={(e, d) => handleTimeChange(key, e, d)}
+                      />
+                    )}
                   </View>
-                </View>
-              ))}
+                );
+              })}
 
               <TouchableOpacity style={styles.saveBtn} onPress={saveFeedingRoutine}>
                 <Text style={styles.saveBtnText}>Save & continue →</Text>
@@ -266,9 +269,7 @@ export default function RoutineSetupScreen() {
                     style={[styles.countBtn, walksPerDay === n && styles.countBtnActive]}
                     onPress={() => setWalksPerDay(n)}
                   >
-                    <Text style={[styles.countText, walksPerDay === n && styles.countTextActive]}>
-                      {n}
-                    </Text>
+                    <Text style={[styles.countText, walksPerDay === n && styles.countTextActive]}>{n}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -282,9 +283,7 @@ export default function RoutineSetupScreen() {
                     onPress={() => setWalkType(t.id)}
                   >
                     <Text style={styles.typeEmoji}>{t.emoji}</Text>
-                    <Text style={[styles.typeLabel, walkType === t.id && styles.typeLabelActive]}>
-                      {t.label}
-                    </Text>
+                    <Text style={[styles.typeLabel, walkType === t.id && styles.typeLabelActive]}>{t.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -302,35 +301,38 @@ export default function RoutineSetupScreen() {
               <Text style={styles.title}>Walking Times</Text>
               <Text style={styles.subtitle}>When do you walk {dogName}?</Text>
 
-              {Array.from({ length: walksPerDay }, (_, i) => (
-                <View key={i} style={styles.timeRow}>
-                  <Text style={styles.timeLabel}>{ordinal(i)} Walk</Text>
-                  <View style={styles.timePickers}>
-                    <WheelPicker
-                      data={HOURS}
-                      selectedIndex={walkHours[i]}
-                      onSelect={(v) => setWalkHour(i, v)}
-                      width={60}
-                    />
-                    <Text style={styles.timeColon}>:</Text>
-                    <WheelPicker
-                      data={MINUTES}
-                      selectedIndex={walkMinutes[i]}
-                      onSelect={(v) => setWalkMinute(i, v)}
-                      width={60}
-                    />
+              {Array.from({ length: walksPerDay }, (_, i) => {
+                const key = `walk-${i}`;
+                return (
+                  <View key={i}>
+                    <TouchableOpacity
+                      style={styles.timeCard}
+                      onPress={() => setActiveTimePicker(activeTimePicker === key ? null : key)}
+                    >
+                      <Text style={styles.timeCardLabel}>{ordinal(i)} Walk</Text>
+                      <Text style={styles.timeCardValue}>
+                        {formatTime(walkTimes[i].getHours(), walkTimes[i].getMinutes())}
+                      </Text>
+                    </TouchableOpacity>
+                    {activeTimePicker === key && (
+                      <DateTimePicker
+                        value={walkTimes[i]}
+                        mode="time"
+                        display="spinner"
+                        minuteInterval={5}
+                        onChange={(e, d) => handleTimeChange(key, e, d)}
+                      />
+                    )}
                   </View>
-                </View>
-              ))}
+                );
+              })}
 
               <TouchableOpacity
                 style={[styles.saveBtn, saving && { opacity: 0.5 }]}
                 onPress={saveWalkingRoutine}
                 disabled={saving}
               >
-                <Text style={styles.saveBtnText}>
-                  {saving ? "Saving..." : "Save & finish ✓"}
-                </Text>
+                <Text style={styles.saveBtnText}>{saving ? "Saving..." : "Save & finish ✓"}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -342,17 +344,11 @@ export default function RoutineSetupScreen() {
   );
 }
 
-// ── Styles ──
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.background },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 60 : 40,
-    paddingBottom: 8,
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 60 : 40, paddingBottom: 8,
   },
   backBtn: {
     width: 36, height: 36, borderRadius: 18, backgroundColor: C.surface,
@@ -362,14 +358,8 @@ const styles = StyleSheet.create({
   headerTitle: { color: C.text, fontSize: 18, fontWeight: "700" },
   skipText: { color: C.textMuted, fontSize: 14 },
 
-  dots: {
-    flexDirection: "row", justifyContent: "center", gap: 8,
-    paddingVertical: 12,
-  },
-  dot: {
-    width: 8, height: 8, borderRadius: 4,
-    backgroundColor: C.border,
-  },
+  dots: { flexDirection: "row", justifyContent: "center", gap: 8, paddingVertical: 12 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.border },
   dotDone: { backgroundColor: Palette.streakGreen },
   dotActive: { backgroundColor: Palette.levelPurple, width: 24 },
 
@@ -378,67 +368,42 @@ const styles = StyleSheet.create({
   stepContent: { alignItems: "center" },
 
   emoji: { fontSize: 48, marginBottom: 12 },
-  title: {
-    color: C.text, fontSize: 24, fontWeight: "800",
-    textAlign: "center", marginBottom: 8,
-  },
-  subtitle: {
-    color: C.textSecondary, fontSize: 15, textAlign: "center",
-    lineHeight: 22, marginBottom: 28,
-  },
+  title: { color: C.text, fontSize: 24, fontWeight: "800", textAlign: "center", marginBottom: 8 },
+  subtitle: { color: C.textSecondary, fontSize: 15, textAlign: "center", lineHeight: 22, marginBottom: 28 },
 
-  // Count picker (1-4)
   countRow: { flexDirection: "row", gap: 12, marginBottom: 28 },
   countBtn: {
     width: 56, height: 56, borderRadius: 28,
     backgroundColor: C.surface, borderWidth: 1, borderColor: C.border,
     alignItems: "center", justifyContent: "center",
   },
-  countBtnActive: {
-    backgroundColor: Palette.levelPurple, borderColor: Palette.levelPurple,
-  },
+  countBtnActive: { backgroundColor: Palette.levelPurple, borderColor: Palette.levelPurple },
   countText: { color: C.text, fontSize: 20, fontWeight: "700" },
   countTextActive: { color: "#fff" },
 
-  // Type cards (food / walk)
-  sectionLabel: {
-    color: C.text, fontSize: 15, fontWeight: "600",
-    alignSelf: "flex-start", marginBottom: 12,
-  },
-  typeGrid: {
-    flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 28,
-    width: "100%",
-  },
+  sectionLabel: { color: C.text, fontSize: 15, fontWeight: "600", alignSelf: "flex-start", marginBottom: 12 },
+  typeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 28, width: "100%" },
   typeCard: {
     flexBasis: "47%", flexGrow: 1,
     paddingVertical: 16, paddingHorizontal: 12,
     backgroundColor: C.surface, borderWidth: 1, borderColor: C.border,
     borderRadius: Radius.lg, alignItems: "center", gap: 6,
   },
-  typeCardActive: {
-    borderColor: Palette.levelPurple, backgroundColor: "rgba(127,119,221,0.1)",
-  },
+  typeCardActive: { borderColor: Palette.levelPurple, backgroundColor: "rgba(127,119,221,0.1)" },
   typeEmoji: { fontSize: 24 },
   typeLabel: { color: C.text, fontSize: 13, fontWeight: "600" },
   typeLabelActive: { color: Palette.levelPurple },
 
-  // Time picker rows
-  timeRow: {
-    width: "100%", marginBottom: 20,
+  // Time card (tap to open native picker)
+  timeCard: {
+    width: "100%", marginBottom: 12,
     backgroundColor: C.surface, borderWidth: 1, borderColor: C.border,
     borderRadius: Radius.lg, padding: 16,
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
   },
-  timeLabel: {
-    color: C.text, fontSize: 15, fontWeight: "700",
-    marginBottom: 8, textAlign: "center",
-  },
-  timePickers: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 4,
-  },
-  timeColon: { color: C.text, fontSize: 24, fontWeight: "700", marginHorizontal: 4 },
+  timeCardLabel: { color: C.text, fontSize: 15, fontWeight: "700" },
+  timeCardValue: { color: Palette.levelPurple, fontSize: 24, fontWeight: "800" },
 
-  // Buttons
   nextBtn: {
     width: "100%", backgroundColor: Palette.pawGold,
     borderRadius: Radius.lg, paddingVertical: 18, alignItems: "center",
@@ -446,7 +411,7 @@ const styles = StyleSheet.create({
   nextBtnText: { color: Palette.questNight, fontSize: 16, fontWeight: "800" },
   saveBtn: {
     width: "100%", backgroundColor: Palette.streakGreen,
-    borderRadius: Radius.lg, paddingVertical: 18, alignItems: "center",
+    borderRadius: Radius.lg, paddingVertical: 18, alignItems: "center", marginTop: 8,
   },
   saveBtnText: { color: "#fff", fontSize: 16, fontWeight: "800" },
 });
