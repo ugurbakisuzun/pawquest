@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pawlo — Your dog's personal teacher</title>
-  <meta name="description" content="The Duolingo for dogs. Bite-size daily lessons, instant AI feedback, real progress — Pawlo is the gentle, persistent teacher every dog deserves. Join the waitlist." />
+  <title>Pawlo — 5 minutes a day. A better dog forever.</title>
+  <meta name="description" content="Your dog pulls on the leash, barks at the door, can't be left alone. Pawlo fixes it — 5-minute daily lessons with instant AI feedback. Like Duolingo, but for dogs." />
 
   <!-- Open Graph / social -->
-  <meta property="og:title" content="Pawlo — Your dog's personal teacher" />
-  <meta property="og:description" content="The Duolingo for dogs. 5 minutes a day. A better dog forever." />
+  <meta property="og:title" content="Pawlo — 5 minutes a day. A better dog forever." />
+  <meta property="og:description" content="Your dog pulls, barks, can't be left alone. Pawlo fixes it — bite-size daily training with AI feedback." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://pawlo.so" />
   <meta name="theme-color" content="#0F0B2E" />
@@ -51,7 +51,7 @@
     img { max-width: 100%; }
 
     .container {
-      max-width: 1200px;
+      max-width: 1100px;
       margin: 0 auto;
       padding: 0 24px;
     }
@@ -120,14 +120,8 @@
     .hero {
       position: relative;
       z-index: 1;
-      padding: 80px 0 100px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      gap: 60px;
-      align-items: center;
+      padding: 70px 0 80px;
+      text-align: center;
     }
 
     .hero-eyebrow {
@@ -143,16 +137,19 @@
       font-weight: 600;
       letter-spacing: 0.6px;
       text-transform: uppercase;
-      margin-bottom: 22px;
+      margin-bottom: 24px;
     }
     .hero-eyebrow::before { content: '🐾'; font-size: 14px; }
 
     h1.hero-title {
-      font-size: clamp(40px, 6.4vw, 72px);
+      font-size: clamp(36px, 6vw, 66px);
       font-weight: 900;
-      line-height: 1.02;
+      line-height: 1.05;
       letter-spacing: -0.035em;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .hero-title .highlight {
       background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--purple) 100%);
@@ -164,212 +161,146 @@
     .hero-sub {
       font-size: 19px;
       color: var(--text-2);
-      max-width: 540px;
-      margin-bottom: 32px;
+      max-width: 600px;
+      margin: 0 auto 36px;
     }
     .hero-sub strong { color: var(--text); font-weight: 600; }
 
-    /* Email form */
-    .email-form {
-      display: flex;
-      gap: 8px;
-      max-width: 460px;
-      background: rgba(255,255,255,0.04);
+    /* ───── Signup form with mini survey ───── */
+    .signup-box {
+      max-width: 520px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 6px;
-      transition: border-color .2s;
+      border-radius: 20px;
+      padding: 28px 28px 22px;
     }
-    .email-form:focus-within { border-color: var(--gold); }
 
-    .email-form input {
-      flex: 1;
-      background: transparent;
-      border: none;
+    .signup-box label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .signup-box select,
+    .signup-box input[type="email"] {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 10px;
       color: var(--text);
       font-family: inherit;
       font-size: 15px;
       padding: 12px 14px;
       outline: none;
+      transition: border-color .2s;
+      -webkit-appearance: none;
+      appearance: none;
     }
-    .email-form input::placeholder { color: var(--text-3); }
+    .signup-box select { margin-bottom: 12px; cursor: pointer; }
+    .signup-box select:focus,
+    .signup-box input:focus { border-color: var(--gold); }
+    .signup-box select option { background: var(--night-2); color: var(--text); }
 
-    .email-form button {
+    .signup-box input::placeholder { color: var(--text-3); }
+
+    .signup-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .signup-row input { flex: 1; }
+
+    .signup-box button {
       background: var(--gold);
       color: var(--night);
       font-weight: 700;
-      font-size: 14px;
-      padding: 12px 22px;
+      font-size: 15px;
+      padding: 12px 24px;
       border-radius: 10px;
       transition: transform .15s ease, box-shadow .2s ease;
       white-space: nowrap;
     }
-    .email-form button:hover:not(:disabled) {
+    .signup-box button:hover:not(:disabled) {
       transform: translateY(-1px);
       box-shadow: 0 10px 30px rgba(250,199,117,0.35);
     }
-    .email-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .signup-box button:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .form-status {
       margin-top: 14px;
       font-size: 13px;
       min-height: 20px;
+      text-align: left;
     }
     .form-status.success { color: var(--green); font-weight: 600; }
     .form-status.error { color: var(--coral); }
 
     .hero-microcopy {
-      margin-top: 14px;
+      margin-top: 18px;
       font-size: 13px;
       color: var(--text-3);
       display: flex;
       align-items: center;
-      gap: 14px;
+      justify-content: center;
+      gap: 16px;
     }
     .hero-microcopy span { display: inline-flex; align-items: center; gap: 5px; }
 
-    /* ───── Phone Mockup ───── */
-    .phone-wrap {
+    /* ───── Problem recognition ───── */
+    .problems {
       position: relative;
-      display: flex;
-      justify-content: center;
-      animation: float 6s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
+      z-index: 1;
+      padding: 80px 0;
     }
 
-    .phone {
-      width: 320px;
-      height: 660px;
-      background: var(--night-2);
-      border: 8px solid #2a2660;
-      border-radius: 44px;
-      padding: 22px 18px;
-      position: relative;
-      box-shadow:
-        0 30px 80px rgba(0,0,0,0.5),
-        0 0 0 1px rgba(255,255,255,0.05),
-        inset 0 1px 0 rgba(255,255,255,0.06);
-      overflow: hidden;
+    .problems-intro {
+      text-align: center;
+      max-width: 660px;
+      margin: 0 auto 50px;
     }
-
-    .phone::before {
-      content: '';
-      position: absolute;
-      top: 14px; left: 50%;
-      transform: translateX(-50%);
-      width: 110px; height: 28px;
-      background: #0a0820;
-      border-radius: 18px;
-    }
-
-    .phone-content { padding-top: 36px; }
-
-    .phone-greeting { color: var(--text-3); font-size: 12px; }
-    .phone-name { font-size: 22px; font-weight: 800; margin-top: 2px; margin-bottom: 18px; }
-
-    .phone-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 16px;
+    .problems-intro h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
       margin-bottom: 14px;
     }
-
-    .phone-row { display: flex; align-items: center; justify-content: space-between; }
-    .phone-dog-info { display: flex; align-items: center; gap: 10px; }
-    .phone-dog-emoji {
-      width: 38px; height: 38px;
-      border-radius: 999px;
-      background: var(--gold);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-    }
-    .phone-dog-name { font-weight: 700; font-size: 14px; }
-    .phone-dog-meta { color: var(--gold); font-size: 11px; margin-top: 1px; }
-    .phone-lvl-pill {
-      background: rgba(250,199,117,0.18);
-      color: var(--gold);
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 999px;
-      letter-spacing: 0.4px;
+    .problems-intro p {
+      font-size: 17px;
+      color: var(--text-2);
     }
 
-    .phone-bar {
-      height: 8px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 999px;
-      margin-top: 14px;
-      overflow: hidden;
-    }
-    .phone-bar-fill {
-      width: 65%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--gold), var(--gold-bright));
-      border-radius: 999px;
-    }
-    .phone-xp-row {
-      display: flex; justify-content: space-between;
-      margin-top: 8px; font-size: 11px;
-    }
-    .phone-xp-row .left { color: var(--gold); font-weight: 700; }
-    .phone-xp-row .right { color: var(--text-3); }
-
-    .phone-stats {
+    .problems-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 14px;
+      gap: 16px;
     }
-    .phone-stat {
-      background: rgba(255,255,255,0.05);
+
+    .problem-card {
+      background: var(--night-2);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px;
+      border-radius: 18px;
+      padding: 28px 24px;
       text-align: center;
+      transition: transform .25s ease, border-color .25s ease;
     }
-    .phone-stat-emoji { font-size: 16px; }
-    .phone-stat-val { font-weight: 800; font-size: 14px; margin-top: 2px; }
-    .phone-stat-val.gold { color: var(--gold); }
-    .phone-stat-val.green { color: var(--green); }
-    .phone-stat-lbl { color: var(--text-3); font-size: 9px; margin-top: 1px; }
+    .problem-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(250,199,117,0.35);
+    }
+    .problem-emoji { font-size: 36px; margin-bottom: 14px; }
+    .problem-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+    .problem-text { font-size: 14px; color: var(--text-2); line-height: 1.5; }
 
-    .phone-mission {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .phone-mission-icon {
-      width: 34px; height: 34px;
-      border-radius: 10px;
-      background: rgba(250,199,117,0.15);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-    }
-    .phone-mission-text { flex: 1; }
-    .phone-mission-title { font-size: 12px; font-weight: 700; }
-    .phone-mission-sub { font-size: 10px; color: var(--text-3); margin-top: 1px; }
-    .phone-mission-xp {
-      background: rgba(250,199,117,0.18);
-      color: var(--gold);
-      font-size: 9px; font-weight: 800;
-      padding: 3px 8px; border-radius: 999px;
-    }
-
-    /* ───── Section base ───── */
+    /* ───── How Pawlo works ───── */
     section.s {
       position: relative;
       z-index: 1;
-      padding: 100px 0;
+      padding: 90px 0;
     }
 
     .section-eyebrow {
@@ -383,69 +314,23 @@
     }
 
     .section-title {
-      font-size: clamp(30px, 4vw, 46px);
+      font-size: clamp(28px, 4vw, 42px);
       font-weight: 900;
       line-height: 1.1;
       letter-spacing: -0.025em;
       text-align: center;
-      max-width: 760px;
-      margin: 0 auto 18px;
+      max-width: 700px;
+      margin: 0 auto 16px;
     }
     .section-sub {
       font-size: 17px;
       color: var(--text-2);
       text-align: center;
-      max-width: 640px;
-      margin: 0 auto 60px;
+      max-width: 580px;
+      margin: 0 auto 56px;
     }
 
-    /* ───── Features grid ───── */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
-
-    .feature-card {
-      background: var(--night-2);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 32px;
-      position: relative;
-      overflow: hidden;
-      transition: transform .25s ease, border-color .25s ease;
-    }
-    .feature-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(250,199,117,0.4);
-    }
-
-    .feature-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      margin-bottom: 18px;
-    }
-    .feature-icon.gold { background: rgba(250,199,117,0.15); }
-    .feature-icon.purple { background: rgba(127,119,221,0.15); }
-    .feature-icon.green { background: rgba(29,158,117,0.15); }
-    .feature-icon.coral { background: rgba(231,111,81,0.15); }
-
-    .feature-title {
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-    .feature-text {
-      color: var(--text-2);
-      font-size: 15px;
-    }
-
-    /* ───── How it works ───── */
+    /* ───── Steps ───��─ */
     .steps-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -457,23 +342,23 @@
       padding: 20px;
     }
     .step-num {
-      width: 56px;
-      height: 56px;
+      width: 52px;
+      height: 52px;
       border-radius: 999px;
       background: var(--gold);
       color: var(--night);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 900;
-      margin: 0 auto 18px;
+      margin: 0 auto 16px;
       box-shadow: 0 10px 30px rgba(250,199,117,0.25);
     }
-    .step-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-    .step-text { color: var(--text-2); font-size: 14px; }
+    .step-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    .step-text { color: var(--text-2); font-size: 14px; line-height: 1.55; }
 
-    /* ───── Pawlo (AI) showcase ───── */
+    /* ───── AI chat showcase ───── */
     .coach-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -491,6 +376,7 @@
       gap: 12px;
       margin-bottom: 16px;
     }
+    .coach-msg:last-child { margin-bottom: 0; }
     .coach-msg.user { justify-content: flex-end; }
     .coach-avatar {
       width: 38px; height: 38px; border-radius: 999px;
@@ -514,76 +400,110 @@
     }
 
     .coach-info h2 {
-      font-size: clamp(28px, 3.5vw, 40px);
+      font-size: clamp(26px, 3.5vw, 38px);
       font-weight: 900;
       line-height: 1.1;
       letter-spacing: -0.025em;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
     .coach-info p {
       color: var(--text-2);
       font-size: 16px;
       margin-bottom: 14px;
+      line-height: 1.6;
     }
-    .coach-info .built-with {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 8px 16px;
-      font-size: 13px;
-      color: var(--text-2);
-      margin-top: 6px;
-    }
-    .built-with strong { color: var(--text); }
 
-    /* ───── Roi spotlight ───── */
-    .roi-card {
-      background: linear-gradient(135deg, rgba(250,199,117,0.08), rgba(127,119,221,0.08));
-      border: 1px solid rgba(250,199,117,0.25);
-      border-radius: 28px;
-      padding: 50px 40px;
+    /* ───── Dog profiles ───── */
+    .dogs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .dog-card {
+      background: var(--night-2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px 18px;
       text-align: center;
-      max-width: 760px;
+      transition: transform .25s ease;
+    }
+    .dog-card:hover { transform: translateY(-4px) rotate(-1deg); }
+    .dog-card-emoji { font-size: 40px; margin-bottom: 10px; }
+    .dog-card-name { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+    .dog-card-breed { font-size: 12px; color: var(--text-3); margin-bottom: 8px; }
+    .dog-card-tag {
+      display: inline-block;
+      background: rgba(250,199,117,0.12);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    /* ───── Comparison ───── */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 700px;
       margin: 0 auto;
     }
-    .roi-emoji { font-size: 60px; margin-bottom: 16px; }
-    .roi-title { font-size: 28px; font-weight: 900; margin-bottom: 10px; }
-    .roi-quote {
+    .compare-card {
+      border-radius: 18px;
+      padding: 28px 24px;
+    }
+    .compare-card.old {
+      background: rgba(231,111,81,0.08);
+      border: 1px solid rgba(231,111,81,0.2);
+    }
+    .compare-card.new {
+      background: rgba(250,199,117,0.08);
+      border: 1px solid rgba(250,199,117,0.25);
+    }
+    .compare-card h3 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .compare-card.old h3 { color: var(--coral); }
+    .compare-card.new h3 { color: var(--gold); }
+    .compare-card ul {
+      list-style: none;
+      font-size: 14px;
       color: var(--text-2);
-      font-size: 17px;
-      max-width: 540px;
-      margin: 0 auto 16px;
-      font-style: italic;
     }
-    .roi-byline {
-      font-size: 13px;
-      color: var(--gold);
-      font-weight: 600;
+    .compare-card ul li {
+      padding: 6px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
     }
+    .compare-card ul li::before { flex-shrink: 0; font-size: 14px; }
+    .compare-card.old ul li::before { content: '✕'; color: var(--coral); }
+    .compare-card.new ul li::before { content: '✓'; color: var(--gold); font-weight: 700; }
 
     /* ───── Final CTA ───── */
     .final-cta {
       text-align: center;
-      padding: 90px 0 60px;
+      padding: 80px 0 50px;
+      position: relative;
+      z-index: 1;
     }
     .final-cta h2 {
-      font-size: clamp(34px, 5vw, 54px);
+      font-size: clamp(30px, 5vw, 48px);
       font-weight: 900;
       line-height: 1.05;
       letter-spacing: -0.025em;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     .final-cta p {
       color: var(--text-2);
       font-size: 17px;
       margin-bottom: 32px;
     }
-    .final-cta .email-form {
-      margin: 0 auto;
-    }
+    .final-cta .signup-box { margin: 0 auto; }
 
     /* ───── Footer ───── */
     footer {
@@ -602,28 +522,23 @@
     /* ───── Responsive ───── */
     @media (max-width: 900px) {
       .hero { padding: 50px 0 60px; }
-      .hero-grid {
-        grid-template-columns: 1fr;
-        gap: 50px;
-      }
-      .phone-wrap { transform: scale(0.92); }
-      .features-grid { grid-template-columns: 1fr; }
+      .problems-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
       .steps-grid { grid-template-columns: 1fr; }
       .coach-grid { grid-template-columns: 1fr; gap: 40px; }
-      section.s { padding: 70px 0; }
+      .dogs-grid { grid-template-columns: repeat(2, 1fr); }
+      .compare-grid { grid-template-columns: 1fr; }
+      section.s { padding: 60px 0; }
+      .problems { padding: 60px 0; }
     }
 
     @media (max-width: 520px) {
       .container { padding: 0 18px; }
       .nav-inner { padding: 14px 0; }
       .nav-cta { padding: 8px 14px; font-size: 13px; }
-      .hero-microcopy { flex-wrap: wrap; gap: 8px; }
-      .email-form { flex-direction: column; padding: 8px; }
-      .email-form input { padding: 12px; }
-      .email-form button { width: 100%; padding: 14px; }
-      .phone { width: 280px; height: 580px; }
-      .feature-card { padding: 26px; }
-      .roi-card { padding: 40px 24px; }
+      .signup-box { padding: 22px 18px 18px; }
+      .signup-row { flex-direction: column; }
+      .signup-row button { width: 100%; padding: 14px; }
+      .hero-microcopy { flex-wrap: wrap; gap: 8px; justify-content: center; }
     }
   </style>
 </head>
@@ -636,132 +551,77 @@
         <span class="logo-mark">🐶</span>
         <span>Pawlo</span>
       </a>
-      <a href="#join" class="nav-cta">Join Waitlist</a>
+      <a href="#join" class="nav-cta">Get early access</a>
     </div>
   </nav>
 
   <!-- ───── HERO ───── -->
   <section class="hero">
-    <div class="container hero-grid">
-      <div>
-        <span class="hero-eyebrow">Coming soon · iOS &amp; Android</span>
-        <h1 class="hero-title">
-          Your dog's<br />
-          <span class="highlight">personal teacher.</span>
-        </h1>
-        <p class="hero-sub">
-          Pawlo turns dog training into a daily 5-minute habit. Bite-size lessons, instant AI feedback, real progress — <strong>like Duolingo, but for dogs.</strong>
-        </p>
+    <div class="container">
+      <span class="hero-eyebrow">Like Duolingo, but for dogs</span>
+      <h1 class="hero-title">
+        Your dog pulls. Barks. Won't listen.<br />
+        <span class="highlight">Fix it in 5 minutes a day.</span>
+      </h1>
+      <p class="hero-sub">
+        Pawlo gives you a short daily training plan built around <strong>your dog's real problems</strong> — with step-by-step guidance and instant AI feedback. No jargon. No $150/hour trainers.
+      </p>
 
-        <form class="email-form" id="hero-form">
-          <input type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
-          <button type="submit">Join the waitlist →</button>
+      <div class="signup-box" id="hero-form-wrap">
+        <form id="hero-form">
+          <label for="hero-challenge">What's your biggest challenge with your dog?</label>
+          <select id="hero-challenge" name="challenge">
+            <option value="">Select one...</option>
+            <option value="leash-pulling">Pulls on the leash like a sled dog</option>
+            <option value="separation-anxiety">Can't be left alone (barks, destroys things)</option>
+            <option value="recall">Won't come when called</option>
+            <option value="barking">Barks at everything — people, dogs, doorbells</option>
+            <option value="potty-training">Still having accidents indoors</option>
+            <option value="jumping">Jumps on everyone who walks in</option>
+            <option value="reactivity">Reacts aggressively to other dogs or people</option>
+            <option value="general">Just want a better-behaved dog overall</option>
+          </select>
+
+          <label for="hero-email">Get early access (free):</label>
+          <div class="signup-row">
+            <input type="email" id="hero-email" name="email" placeholder="you@example.com" required autocomplete="email" />
+            <button type="submit">Join free →</button>
+          </div>
         </form>
         <div class="form-status" id="hero-status"></div>
-
-        <div class="hero-microcopy">
-          <span>🔒 No spam, ever</span>
-          <span>🎁 Early access</span>
-          <span>🐾 Free to join</span>
-        </div>
       </div>
 
-      <div class="phone-wrap">
-        <div class="phone">
-          <div class="phone-content">
-            <div class="phone-greeting">Good morning,</div>
-            <div class="phone-name">Roi 🐶</div>
-
-            <div class="phone-card">
-              <div class="phone-row">
-                <div class="phone-dog-info">
-                  <div class="phone-dog-emoji">🦮</div>
-                  <div>
-                    <div class="phone-dog-name">Roi</div>
-                    <div class="phone-dog-meta">Level 3 · Maltichon</div>
-                  </div>
-                </div>
-                <div class="phone-lvl-pill">LVL 3</div>
-              </div>
-              <div class="phone-bar"><div class="phone-bar-fill"></div></div>
-              <div class="phone-xp-row">
-                <span class="left">650 XP</span>
-                <span class="right">350 XP to Level 4</span>
-              </div>
-            </div>
-
-            <div class="phone-stats">
-              <div class="phone-stat">
-                <div class="phone-stat-emoji">🔥</div>
-                <div class="phone-stat-val gold">7</div>
-                <div class="phone-stat-lbl">Day streak</div>
-              </div>
-              <div class="phone-stat">
-                <div class="phone-stat-emoji">⭐</div>
-                <div class="phone-stat-val">650</div>
-                <div class="phone-stat-lbl">Total XP</div>
-              </div>
-              <div class="phone-stat">
-                <div class="phone-stat-emoji">🏅</div>
-                <div class="phone-stat-val green">Lv.3</div>
-                <div class="phone-stat-lbl">Level</div>
-              </div>
-            </div>
-
-            <div class="phone-mission">
-              <div class="phone-mission-icon">🐾</div>
-              <div class="phone-mission-text">
-                <div class="phone-mission-title">Today's Lesson</div>
-                <div class="phone-mission-sub">Separation Anxiety · Day 4</div>
-              </div>
-              <div class="phone-mission-xp">+30 XP</div>
-            </div>
-            <div class="phone-mission">
-              <div class="phone-mission-icon">🎯</div>
-              <div class="phone-mission-text">
-                <div class="phone-mission-title">Practice a Trick</div>
-                <div class="phone-mission-sub">Any trick from the library</div>
-              </div>
-              <div class="phone-mission-xp">+20 XP</div>
-            </div>
-          </div>
-        </div>
+      <div class="hero-microcopy">
+        <span>🔒 No spam, ever</span>
+        <span>🎁 Early access perks</span>
+        <span>🐾 100% free to join</span>
       </div>
     </div>
   </section>
 
-  <!-- ───── FEATURES ───── -->
-  <section class="s" id="features">
+  <!-- ───── PROBLEM RECOGNITION ───── -->
+  <section class="problems">
     <div class="container">
-      <div class="section-eyebrow">Why Pawlo</div>
-      <h2 class="section-title">A teacher in your pocket. A friend on the leash.</h2>
-      <p class="section-sub">
-        Every dog training app teaches the same tricks. Pawlo is the only one your dog will drag you to.
-      </p>
+      <div class="problems-intro">
+        <h2>Sound familiar?</h2>
+        <p>You love your dog. But some days, you're exhausted. You've Googled the same thing five times. You've tried everything. Nothing sticks.</p>
+      </div>
 
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon gold">🏆</div>
-          <h3 class="feature-title">XP &amp; Levels</h3>
-          <p class="feature-text">Earn XP for every lesson. Level your dog from <em>Curious Pup</em> all the way to <em>Top Dog</em>. Six levels, real progression — just like a language app.</p>
+      <div class="problems-grid">
+        <div class="problem-card">
+          <div class="problem-emoji">😤</div>
+          <div class="problem-title">Walks are a wrestling match</div>
+          <div class="problem-text">They pull so hard your shoulder aches. You avoid busy streets. You've bought three different harnesses.</div>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon green">🔥</div>
-          <h3 class="feature-title">Daily Streaks</h3>
-          <p class="feature-text">Train every day, build the habit, never break the chain. Streaks are the secret weapon behind every well-trained dog — and every fluent language learner.</p>
+        <div class="problem-card">
+          <div class="problem-emoji">😰</div>
+          <div class="problem-title">You can't leave them alone</div>
+          <div class="problem-text">Barking starts before you close the door. The neighbours have mentioned it. You feel trapped.</div>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon purple">🐶</div>
-          <h3 class="feature-title">Meet Pawlo (your AI teacher)</h3>
-          <p class="feature-text">Pawlo lives inside the app and knows your dog by name. Ask anything — get warm, practical, jargon-free advice. Powered by Claude, available 24/7.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon coral">📚</div>
-          <h3 class="feature-title">Real Programs</h3>
-          <p class="feature-text">Separation anxiety, recall, leash walking, potty training. Step-by-step day plans built by experts — with voice prompts and instant feedback at every step.</p>
+        <div class="problem-card">
+          <div class="problem-emoji">🙉</div>
+          <div class="problem-title">"Come!" means nothing</div>
+          <div class="problem-text">They look at you. They hear you. They choose the squirrel every time. Off-leash feels impossible.</div>
         </div>
       </div>
     </div>
@@ -770,84 +630,152 @@
   <!-- ───── HOW IT WORKS ───── -->
   <section class="s">
     <div class="container">
-      <div class="section-eyebrow">How it works</div>
-      <h2 class="section-title">Three steps. Five minutes a day.</h2>
-      <p class="section-sub">No clickers, no jargon, no 90-page PDFs. Just open the app and let Pawlo do the rest.</p>
+      <div class="section-eyebrow">How Pawlo works</div>
+      <h2 class="section-title">Three steps. Five minutes. Real results.</h2>
+      <p class="section-sub">No 90-page PDFs. No confusing clicker protocols. Open the app, follow along, see the difference.</p>
 
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-num">1</div>
-          <h3 class="step-title">Pick your program</h3>
-          <p class="step-text">Choose what to focus on — separation anxiety, recall, potty training, leash walking, or all of them. Pawlo personalizes the plan for your dog's age and breed.</p>
+          <h3 class="step-title">Tell Pawlo about your dog</h3>
+          <p class="step-text">Breed, age, and the problems you're dealing with. Pawlo builds a day-by-day plan around your specific situation — not a generic course.</p>
         </div>
         <div class="step-card">
           <div class="step-num">2</div>
-          <h3 class="step-title">Train 5 minutes</h3>
-          <p class="step-text">Open the daily lesson. Pawlo guides you step-by-step, listens to how it went, and gives instant feedback in plain language.</p>
+          <h3 class="step-title">Train for 5 minutes</h3>
+          <p class="step-text">Pawlo walks you through each step. Tell it how your dog reacted — by voice or text. Get instant, practical feedback on what to adjust.</p>
         </div>
         <div class="step-card">
           <div class="step-num">3</div>
-          <h3 class="step-title">Watch them grow</h3>
-          <p class="step-text">Unlock badges, hit streaks, climb levels. Real training. Real progress. Real XP — for both of you.</p>
+          <h3 class="step-title">See real progress</h3>
+          <p class="step-text">Track streaks, earn XP, watch your dog level up from Curious Pup to Top Dog. Small daily wins that compound into a well-trained dog.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ───── PAWLO SHOWCASE ───── -->
+  <!-- ───── AI ADVISOR SHOWCASE ───── -->
   <section class="s">
     <div class="container coach-grid">
       <div class="coach-bubble-wrap">
         <div class="coach-msg user">
-          <div class="coach-bubble">Roi won't stop pulling on the leash 😤</div>
+          <div class="coach-bubble">Luna barks every time someone rings the doorbell. I've tried ignoring it but nothing works 😩</div>
           <div class="coach-avatar">🧑</div>
         </div>
         <div class="coach-msg">
           <div class="coach-avatar">🐶</div>
           <div class="coach-bubble">
-            Try the "freeze" technique with Roi today: the second the leash goes taut, stop walking. Don't pull back, don't talk — just freeze. The walk only continues when the leash is loose. Repeat for 10 minutes today and you'll see a difference by Friday. You've got this! 🦮
+            That's super common with Luna's breed! Here's a 3-step plan for today: 1) Ask a friend to ring the bell. 2) The second Luna looks at you instead of the door, treat immediately. 3) Repeat 5 times, then stop. We're teaching Luna that the bell means "look at me" — not "sound the alarm." Try it tonight and tell me how it goes! 🎉
           </div>
         </div>
       </div>
 
       <div class="coach-info">
-        <div class="section-eyebrow" style="text-align:left">Meet your teacher</div>
-        <h2>Pawlo. Patient, persistent, never tired.</h2>
-        <p>Pawlo is the friendly mascot at the heart of the app — and the AI teacher who lives inside it. He knows your dog by name, breed, age, and training history. Ask anything. Get warm, practical, jargon-free advice in seconds.</p>
-        <p>It's like texting a behaviourist who never sleeps — and never charges by the hour.</p>
-        <div class="built-with">Powered by <strong>Claude</strong> by Anthropic</div>
+        <div class="section-eyebrow" style="text-align:left">Your AI training partner</div>
+        <h2>Ask anything. Get real answers — not generic advice.</h2>
+        <p>Pawlo knows your dog's name, breed, age, and training history. It gives specific, practical tips — not copy-pasted articles. Like texting a trainer who never sleeps and never charges by the hour.</p>
+        <p style="color: var(--text-3); font-size: 14px;">AI-powered. Force-free methods only. Always positive reinforcement.</p>
       </div>
     </div>
   </section>
 
-  <!-- ───── ROI SPOTLIGHT ───── -->
+  <!-- ───── DOG PROFILES ───── -->
   <section class="s">
     <div class="container">
-      <div class="section-eyebrow">First student</div>
-      <h2 class="section-title">Meet Roi.</h2>
+      <div class="section-eyebrow">Built for every dog</div>
+      <h2 class="section-title">Pawlo works for all of them.</h2>
+      <p class="section-sub">Rescue or puppy. Tiny or giant. Calm or chaos. Every dog has something to learn — and Pawlo adapts to each one.</p>
 
-      <div class="roi-card">
-        <div class="roi-emoji">🦮</div>
-        <div class="roi-title">Roi · Maltichon · London</div>
-        <p class="roi-quote">
-          "Pawlo's first official student. He's currently working through his Separation Anxiety program, has earned three badges, and is two days into a streak. Curious Pup, soon to be Learning Tail."
-        </p>
-        <div class="roi-byline">— The Pawlo beta journal</div>
+      <div class="dogs-grid">
+        <div class="dog-card">
+          <div class="dog-card-emoji">🐕</div>
+          <div class="dog-card-name">Biscuit</div>
+          <div class="dog-card-breed">Cockapoo · 9 weeks</div>
+          <div class="dog-card-tag">Potty training</div>
+        </div>
+        <div class="dog-card">
+          <div class="dog-card-emoji">🦮</div>
+          <div class="dog-card-name">Bear</div>
+          <div class="dog-card-breed">German Shepherd · 2 years</div>
+          <div class="dog-card-tag">Leash pulling</div>
+        </div>
+        <div class="dog-card">
+          <div class="dog-card-emoji">🐩</div>
+          <div class="dog-card-name">Mochi</div>
+          <div class="dog-card-breed">Rescue · ~3 years</div>
+          <div class="dog-card-tag">Separation anxiety</div>
+        </div>
+        <div class="dog-card">
+          <div class="dog-card-emoji">🐶</div>
+          <div class="dog-card-name">Nacho</div>
+          <div class="dog-card-breed">Chihuahua · 1 year</div>
+          <div class="dog-card-tag">Barking at everything</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── COMPARISON ───── -->
+  <section class="s">
+    <div class="container">
+      <div class="section-eyebrow">Why Pawlo is different</div>
+      <h2 class="section-title">Training that actually sticks.</h2>
+      <p class="section-sub">You've tried YouTube videos and expensive trainers. Here's why they didn't work — and why Pawlo does.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card old">
+          <h3>The old way</h3>
+          <ul>
+            <li>$50–150/hour for a trainer</li>
+            <li>Generic YouTube videos for a generic dog</li>
+            <li>A 3-hour session you forget by Tuesday</li>
+            <li>No follow-up, no accountability</li>
+            <li>You stop after two weeks</li>
+          </ul>
+        </div>
+        <div class="compare-card new">
+          <h3>The Pawlo way</h3>
+          <ul>
+            <li>5 minutes a day, every day</li>
+            <li>A plan built for your specific dog</li>
+            <li>AI feedback after every session</li>
+            <li>Streaks and XP to keep you going</li>
+            <li>Progress you can actually see</li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ───── FINAL CTA ───── -->
-  <section class="s final-cta" id="join">
+  <section class="final-cta" id="join">
     <div class="container">
-      <h2>Be one of the first to meet Pawlo.</h2>
-      <p>Join the waitlist. We'll let you know the moment Pawlo lands in the App Store.</p>
+      <h2>Start training smarter.<br />Join free today.</h2>
+      <p>Be one of the first to try Pawlo. Tell us your dog's biggest challenge and we'll save your spot.</p>
 
-      <form class="email-form" id="footer-form">
-        <input type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
-        <button type="submit">Join the waitlist →</button>
-      </form>
-      <div class="form-status" id="footer-status"></div>
+      <div class="signup-box">
+        <form id="footer-form">
+          <label for="footer-challenge">Your dog's biggest challenge:</label>
+          <select id="footer-challenge" name="challenge">
+            <option value="">Select one...</option>
+            <option value="leash-pulling">Pulls on the leash like a sled dog</option>
+            <option value="separation-anxiety">Can't be left alone (barks, destroys things)</option>
+            <option value="recall">Won't come when called</option>
+            <option value="barking">Barks at everything — people, dogs, doorbells</option>
+            <option value="potty-training">Still having accidents indoors</option>
+            <option value="jumping">Jumps on everyone who walks in</option>
+            <option value="reactivity">Reacts aggressively to other dogs or people</option>
+            <option value="general">Just want a better-behaved dog overall</option>
+          </select>
+
+          <label for="footer-email">Your email:</label>
+          <div class="signup-row">
+            <input type="email" id="footer-email" name="email" placeholder="you@example.com" required autocomplete="email" />
+            <button type="submit">Join free →</button>
+          </div>
+        </form>
+        <div class="form-status" id="footer-status"></div>
+      </div>
     </div>
   </section>
 
@@ -860,19 +788,18 @@
       </a>
       <div>© 2026 Pawlo · Your dog's personal teacher</div>
       <div style="margin-top:8px">
-        <a class="foot-link" href="https://pawlo.so">pawlo.so</a>
+        <a class="foot-link" href="/privacy">Privacy</a>
+        <a class="foot-link" href="/terms">Terms</a>
+        <a class="foot-link" href="/delete-account">Delete Account</a>
       </div>
     </div>
   </footer>
 
   <script>
-    // ───── Supabase REST waitlist signup + UTM capture ─────
+    // ───── Supabase REST waitlist signup + UTM capture + challenge tracking ─────
     const SUPABASE_URL = "https://spnlnakubbdlssxliwfp.supabase.co";
     const SUPABASE_KEY = "sb_publishable_bvUjdgr4t6Lu95bGdQOZaw_dQZy2AcJ";
 
-    // Marketing attribution keys we pick up from the URL query string.
-    // These get persisted in sessionStorage so UTM params survive if the
-    // visitor navigates to /privacy, /terms, etc. before they sign up.
     const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
     const META_STORAGE_KEY = "pawlo_signup_metadata";
 
@@ -885,8 +812,6 @@
       const params = new URLSearchParams(window.location.search);
       let changed = false;
 
-      // Only write UTM params once per session — don't let a later visit
-      // without UTMs clobber the original attribution.
       for (const key of UTM_KEYS) {
         const val = params.get(key);
         if (val && !meta[key]) {
@@ -895,17 +820,13 @@
         }
       }
 
-      // First-visit timestamp (stable across returning visits in the session)
       if (!meta.first_seen_at) {
         meta.first_seen_at = new Date().toISOString();
         changed = true;
       }
 
-      // Landing page variant tag — bump this when we ship A/B changes
-      meta.landing_version = "v2";
+      meta.landing_version = "v3";
 
-      // Browser timezone — useful for knowing where waitlist signups come from
-      // before we wire up geo IP (which we don't have on the client side).
       if (!meta.timezone) {
         try {
           meta.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -919,10 +840,9 @@
       return meta;
     }
 
-    // Capture on first paint so UTMs aren't lost if the user clicks away.
     captureMarketingMetadata();
 
-    async function joinWaitlist(email, statusEl, btn) {
+    async function joinWaitlist(email, challenge, statusEl, btn) {
       statusEl.className = "form-status";
       statusEl.innerHTML = "";
 
@@ -939,6 +859,7 @@
       try {
         const metadata = {
           ...captureMarketingMetadata(),
+          challenge: challenge || null,
           signup_at_local: new Date().toISOString(),
         };
 
@@ -960,7 +881,7 @@
         });
 
         if (res.ok || res.status === 409) {
-          showSuccessState(statusEl, btn, res.ok);
+          showSuccessState(statusEl, btn, res.ok, challenge);
           return;
         }
 
@@ -982,39 +903,51 @@
       }
     }
 
-    function showSuccessState(statusEl, btn, isNewSignup) {
+    function showSuccessState(statusEl, btn, isNewSignup, challenge) {
       statusEl.className = "form-status success";
+
+      const challengeMessages = {
+        "leash-pulling": "Pawlo's Leash Walking program has helped dogs stop pulling in under 2 weeks.",
+        "separation-anxiety": "Pawlo's 21-day Separation Anxiety program is our most popular — you're not alone.",
+        "recall": "Pawlo's 10-day Recall program will have them coming back every time.",
+        "barking": "Reactive barking is one of the most common issues — Pawlo's got a plan for that.",
+        "potty-training": "Pawlo's 7-day Potty Training program is perfect for puppies and rescues.",
+        "jumping": "Jumping is fixable fast — Pawlo will show you how in the first week.",
+        "reactivity": "Reactivity needs patience and the right plan. Pawlo's AI adapts to your dog's pace.",
+        "general": "Great news — Pawlo covers everything from basic obedience to advanced tricks.",
+      };
+
+      const personalNote = challenge && challengeMessages[challenge]
+        ? '<div style="margin-top:8px;font-size:13px;color:var(--text-2);">' + challengeMessages[challenge] + '</div>'
+        : '';
+
       const lead = isNewSignup
-        ? "🎉 You're in! We'll email you the moment Pawlo lands — so you can start the free 7-day potty training program right away."
-        : "🐾 You're already on the list! Pawlo will be in touch soon.";
+        ? "🎉 You're in! We'll email you the moment Pawlo is ready."
+        : "🐾 You're already on the list! We'll be in touch soon.";
 
       statusEl.innerHTML =
         '<div style="line-height:1.45;">' + lead + '</div>' +
+        personalNote +
         '<div style="margin-top:10px;font-size:13px;color:rgba(255,255,255,0.55);">' +
-          'Know a dog owner who\u2019d love this? ' +
-          '<a href="#" id="pawlo-share-link" style="color:var(--gold);text-decoration:underline;">Share Pawlo \u2192</a>' +
+          'Know a dog owner who needs this? ' +
+          '<a href="#" class="pawlo-share-link" style="color:var(--gold);text-decoration:underline;">Share Pawlo →</a>' +
         '</div>';
 
-      const shareLink = statusEl.querySelector("#pawlo-share-link");
+      const shareLink = statusEl.querySelector(".pawlo-share-link");
       if (shareLink) shareLink.addEventListener("click", sharePawlo);
 
-      btn.textContent = "\u2713 Joined";
+      btn.textContent = "✓ You're in";
     }
 
     async function sharePawlo(event) {
       if (event) event.preventDefault();
       const shareData = {
-        title: "Pawlo — Your dog's personal teacher",
-        text: "I just joined the Pawlo waitlist. 5-minute daily dog training, like Duolingo but for dogs. Thought you'd love it 🐾",
+        title: "Pawlo — 5 minutes a day, a better dog forever",
+        text: "I just signed up for Pawlo — it's like Duolingo but for dog training. 5-minute daily lessons with AI feedback. Check it out 🐾",
         url: "https://pawlo.so",
       };
       if (navigator.share) {
-        try {
-          await navigator.share(shareData);
-          return;
-        } catch {
-          // user cancelled or share rejected — fall through to clipboard
-        }
+        try { await navigator.share(shareData); return; } catch {}
       }
       try {
         await navigator.clipboard.writeText("https://pawlo.so");
@@ -1025,7 +958,6 @@
         setTimeout(() => tip.remove(), 2500);
         return;
       } catch {}
-      // Final fallback: mailto
       window.location.href =
         "mailto:?subject=" + encodeURIComponent("Check out Pawlo") +
         "&body=" + encodeURIComponent(shareData.text + "\n\n" + shareData.url);
@@ -1038,8 +970,9 @@
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         const email = form.querySelector('input[name="email"]').value;
+        const challenge = form.querySelector('select[name="challenge"]').value;
         const btn = form.querySelector("button");
-        joinWaitlist(email, status, btn);
+        joinWaitlist(email, challenge, status, btn);
       });
     }
 
